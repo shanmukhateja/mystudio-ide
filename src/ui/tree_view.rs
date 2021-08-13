@@ -5,9 +5,9 @@ pub fn build_tree_view() -> gtk::TreeView {
     let tree_model = build_tree_model();
 
     let tree = gtk::TreeViewBuilder::new()
+    .headers_visible(false)
     .model(&tree_model)
     .border_width(10)
-    .expand(true)
     .build();
 
     // Add column to render content
