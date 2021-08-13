@@ -1,5 +1,7 @@
 use gtk::prelude::*;
 
+use crate::workspace;
+
 pub fn build_actions_button() -> gtk::Grid {
     let grid_view = gtk::GridBuilder::new().hexpand(true).vexpand(false).build();
 
@@ -22,7 +24,7 @@ pub fn build_actions_button() -> gtk::Grid {
 fn on_open_dir_clicked() {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
-    
+
     let chooser = gtk::FileChooserDialogBuilder::new()
         .action(gtk::FileChooserAction::SelectFolder)
         .title("Open Folder")
@@ -42,11 +44,11 @@ fn on_open_dir_clicked() {
             let dir_path_buf = chosen_dir.path().unwrap();
             let dir_path = dir_path_buf.to_str().unwrap();
 
-            println!("path: {:?}", dir_path);
+            // update global workspace path
+            workspace::Workspace::update_path(dir_path.to_string());
         }
         _ => (),
     };
 
     chooser.hide();
-
 }

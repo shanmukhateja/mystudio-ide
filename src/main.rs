@@ -1,6 +1,7 @@
 use gtk::prelude::*;
 
 mod ui;
+mod workspace;
 
 fn build_ui(app: &gtk::Application) {
     let window = gtk::ApplicationWindowBuilder::new()
