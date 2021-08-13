@@ -8,13 +8,13 @@ fn build_ui(app: &gtk::Application) {
         .default_width(800)
         .default_height(600)
         .application(app)
-        .border_width(10)
         .visible(true)
         .build();
 
     let box_layout = gtk::BoxBuilder::new()
-    .orientation(gtk::Orientation::Vertical)
-    .spacing(1)
+    .orientation(gtk::Orientation::Horizontal)
+    .spacing(3)
+    .border_width(10)
     .build();
 
     // Tree
