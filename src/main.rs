@@ -20,6 +20,10 @@ fn build_ui(app: &gtk::Application) {
     // Tree
     let tree = ui::tree_view::build_tree_view();
     box_layout.add(&tree);
+    
+    // Text Editor
+    let editor = ui::text_view::build_text_view();
+    box_layout.add(&editor);
 
     window.add(&box_layout);
 
