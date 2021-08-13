@@ -1,5 +1,7 @@
 use gtk::prelude::*;
 
+mod ui;
+
 fn build_ui(app: &gtk::Application) {
     let window = gtk::ApplicationWindowBuilder::new()
         .title("MyStudio IDE")
@@ -9,6 +11,17 @@ fn build_ui(app: &gtk::Application) {
         .border_width(10)
         .visible(true)
         .build();
+
+    let box_layout = gtk::BoxBuilder::new()
+    .orientation(gtk::Orientation::Vertical)
+    .spacing(1)
+    .build();
+
+    // Tree
+    let tree = ui::tree_view::build_tree_view();
+    box_layout.add(&tree);
+
+    window.add(&box_layout);
 
     window.show_all();
 }
