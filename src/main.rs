@@ -11,21 +11,34 @@ fn build_ui(app: &gtk::Application) {
         .visible(true)
         .build();
 
-    let box_layout = gtk::BoxBuilder::new()
+    let main_box = gtk::BoxBuilder::new()
+    .orientation(gtk::Orientation::Vertical)
+    .margin_top(10)
+    .margin_start(10)
+    .margin_bottom(10)
+    .build();
+
+    // Actions buttons menu
+    let actions_menu = ui::btn_action_row::build_actions_button();
+    main_box.add(&actions_menu);
+
+    let tree_editor_box = gtk::BoxBuilder::new()
     .orientation(gtk::Orientation::Horizontal)
     .spacing(3)
+    .vexpand(true)
     .border_width(10)
     .build();
 
     // Tree
     let tree = ui::tree_view::build_tree_view();
-    box_layout.add(&tree);
+    tree_editor_box.add(&tree);
     
     // Text Editor
     let editor = ui::text_view::build_text_view();
-    box_layout.add(&editor);
+    tree_editor_box.add(&editor);
 
-    window.add(&box_layout);
+    main_box.add(&tree_editor_box);
+    window.add(&main_box);
 
     window.show_all();
 }
