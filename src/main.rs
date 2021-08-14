@@ -1,6 +1,10 @@
+use std::path::Path;
+
 use comms::CommEvents;
 use gtk::glib;
 use gtk::prelude::*;
+
+use crate::workspace::Workspace;
 
 pub mod comms;
 mod ui;
@@ -24,6 +28,7 @@ fn build_ui(app: &gtk::Application) {
 
     // Channels to communicate with UI widgets
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+    let tx_clone = tx.clone();
 
     // Actions buttons menu
     let actions_menu = ui::btn_action_row::build_actions_button(tx.clone());
@@ -57,8 +62,29 @@ fn build_ui(app: &gtk::Application) {
                 ui::tree_view::update_tree_model(tree_clone.clone());
             }
             CommEvents::RootTreeItemClicked(file_name) => {
-                println!("selected file/dir: {:?}", file_name);
+                // Concat workspace dir path with selection
+                let workspace_path = Workspace::get_path();
+                let file_path = Path::new(&workspace_path).join(file_name).to_owned();
+
+                if file_path.is_file() {
+                    match std::fs::read(file_path) {
+                        Ok(content) => {
+                            let content = String::from_utf8(content).unwrap_or_default();
+                            tx_clone.send(CommEvents::UpdateRootTextViewContent(content)).ok();
+                        },
+                        Err(error) => {
+                            println!("Unable to read file, {}", error);
+                        },
+                    }
+                }
+                
             }
+            CommEvents::UpdateRootTextViewContent(content) => {
+                let text_editor = &editor;
+
+                text_editor.buffer().unwrap().set_text(&content.as_str());
+                // text_editor.queue_draw();
+            },
         }
         // Don't forget to include this!
         glib::Continue(true)
