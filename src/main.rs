@@ -57,7 +57,7 @@ fn build_ui(app: &gtk::Application) {
                 ui::tree_view::update_tree_model(tree_clone.clone());
             }
             CommEvents::RootTreeItemClicked(file_name) => {
-                println!("{:?}", file_name);
+                println!("selected file/dir: {:?}", file_name);
             }
         }
         // Don't forget to include this!

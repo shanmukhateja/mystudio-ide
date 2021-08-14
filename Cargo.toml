@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 gtk = { version = "0.14", features = ["v3_24"] }
+jwalk = "0.6.0"

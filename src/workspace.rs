@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use std::fs::read_dir;
+use jwalk::WalkDir;
 
 // Holds reference to Workspace
 thread_local!(static WORKSPACE_PATH: RefCell<Workspace> = RefCell::new(Workspace::new()));
@@ -32,22 +32,22 @@ impl Workspace {
             return Vec::new();
         }
 
-        let files = read_dir(dir_path_string.as_str())
-            .unwrap()
-            .map(|res| {
-                res.map(|e| {
-                    // remove <path> + "/" chars from ListStore entries
-                    let mut replace_path = String::from(&dir_path_string);
-                    replace_path.push_str("/");
-
-                    e.path()
-                        .to_str()
-                        .unwrap()
-                        .replace(replace_path.as_str(), "")
-                })
+        let files = WalkDir::new(&dir_path_string)
+            .skip_hidden(true)
+            .into_iter()
+            .map(|entry| {
+                let entry = entry.unwrap();
+                
+                // remove <path> + "/" chars from ListStore entries
+                let mut replace_path = String::from(&dir_path_string);
+                replace_path.push_str("/");
+                
+                entry.path()
+                .to_str()
+                .unwrap()
+                .replace(replace_path.as_str(), "")
             })
-            .collect::<Result<Vec<_>, std::io::Error>>()
-            .unwrap();
+            .collect::<Vec<String>>();
 
         files
     }

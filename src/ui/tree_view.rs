@@ -1,4 +1,4 @@
-use gtk::{glib, prelude::*};
+use gtk::{ListStore, glib, prelude::*};
 
 use crate::{comms::CommEvents, workspace::Workspace};
 
@@ -15,13 +15,10 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
     tree.selection().connect_changed(move |selected_data| {
         let selected_data = selected_data.to_owned();
         let selection_count = selected_data.count_selected_rows();
-        println!("{}", selection_count);
         if selection_count > 0 {
             let (tree_model, tree_iter) = selected_data.selected().unwrap();
-            let selected_file = tree_model.value(&tree_iter, 0);
-            let selected_file_string = selected_file.to_value().get::<String>().unwrap();
-            tx.send(CommEvents::RootTreeItemClicked(selected_file_string))
-                .ok();
+            let selected_file = tree_model.value(&tree_iter, 0).to_value().get::<String>().unwrap();
+            tx.send(CommEvents::RootTreeItemClicked(selected_file)).ok();
         }
 
         gtk::Inhibit(true);
@@ -38,14 +35,22 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
     tree
 }
 
-fn build_tree_model() -> gtk::ListStore {
-    let store = gtk::ListStore::new(&[str::static_type()]);
+fn build_tree_model() -> ListStore {
+    let store = ListStore::new(&[str::static_type()]);
 
-    let entries = Workspace::get_files_list();
+    let mut entries = Workspace::get_files_list();
+    
+    // remove workspace path from list
+    if entries.len() > 0 {
+        entries = entries.drain(1..).collect::<Vec<String>>();
+    }
 
     for (i, entry) in entries.into_iter().enumerate() {
         // add `+1` to 'position' parameter as `i` is 0-index based
-        store.insert_with_values(Some(i as u32 + 1), &[(0 as u32, &entry)]);
+        store.insert_with_values(
+            Some(i as u32 + 1),
+            &[(0 as u32, &entry)],
+        );
     }
 
     store
