@@ -1,8 +1,8 @@
-use gtk::prelude::*;
+use gtk::{glib, prelude::*};
 
-use crate::workspace::Workspace;
+use crate::{comms::CommEvents, workspace::Workspace};
 
-pub fn build_tree_view() -> gtk::TreeView {
+pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
     let tree_model = build_tree_model();
 
     let tree = gtk::TreeViewBuilder::new()
@@ -11,6 +11,20 @@ pub fn build_tree_view() -> gtk::TreeView {
         .name("tree")
         .border_width(10)
         .build();
+
+    tree.selection().connect_changed(move |selected_data| {
+        let selected_data = selected_data.to_owned();
+        let selection_count = selected_data.count_selected_rows();
+        println!("{}", selection_count);
+        if selection_count > 0 {
+            let (tree_model, tree_iter) = selected_data.selected().unwrap();
+            let selected_file = tree_model.value(&tree_iter, 0);
+            let selected_file_string = selected_file.to_value().get::<String>().unwrap();
+            tx.send(CommEvents::RootTreeItemClicked(selected_file_string)).ok();
+        }
+
+        gtk::Inhibit(true);
+    });
 
     // Add column to render content
     let column = gtk::TreeViewColumn::new();

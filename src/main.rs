@@ -1,3 +1,4 @@
+use comms::CommEvents;
 use gtk::prelude::*;
 use gtk::glib;
 
@@ -36,7 +37,7 @@ fn build_ui(app: &gtk::Application) {
     .build();
 
     // Tree
-    let tree = ui::tree_view::build_tree_view();
+    let tree = ui::tree_view::build_tree_view(tx);
     tree_editor_box.add(&tree);
     
     // Text Editor
@@ -53,9 +54,12 @@ fn build_ui(app: &gtk::Application) {
     let tree_clone = tree.clone();
     rx.attach(None, move |msg| {
         match msg {
-            comms::CommEvents::UpdateRootTree() => {
+            CommEvents::UpdateRootTree() => {
                 ui::tree_view::update_tree_model(tree_clone.clone());
             },
+            CommEvents::RootTreeItemClicked(file_name) => {
+                println!("{:?}", file_name);
+            }
         }
         // Don't forget to include this!
         glib::Continue(true)
