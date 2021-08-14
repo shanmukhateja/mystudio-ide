@@ -1,8 +1,10 @@
 use gtk::prelude::*;
 
+use crate::comms::CommEvents;
 use crate::workspace::Workspace;
+use gtk::glib;
 
-pub fn build_actions_button() -> gtk::Grid {
+pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     let grid_view = gtk::GridBuilder::new().hexpand(true).vexpand(false).build();
 
     // Open Dir button
@@ -11,8 +13,8 @@ pub fn build_actions_button() -> gtk::Grid {
         .focus_on_click(true)
         .build();
 
-    open_dir_button.connect_button_release_event(|_btn, _y| {
-        on_open_dir_clicked();
+    open_dir_button.connect_button_release_event(move |_btn, _y| {
+        on_open_dir_clicked(tx.clone());
         gtk::Inhibit(true)
     });
 
@@ -21,7 +23,7 @@ pub fn build_actions_button() -> gtk::Grid {
     grid_view
 }
 
-fn on_open_dir_clicked() {
+fn on_open_dir_clicked(tx: glib::Sender<CommEvents>) {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
@@ -46,6 +48,9 @@ fn on_open_dir_clicked() {
 
             // update global workspace path
             Workspace::update_path(dir_path.to_string());
+
+            // update UI
+            tx.send(CommEvents::UpdateRootTree()).ok();
         }
         _ => (),
     };

@@ -1,7 +1,9 @@
 use gtk::prelude::*;
+use gtk::glib;
 
 mod ui;
-mod workspace;
+pub mod workspace;
+pub mod comms;
 
 fn build_ui(app: &gtk::Application) {
     let window = gtk::ApplicationWindowBuilder::new()
@@ -19,8 +21,11 @@ fn build_ui(app: &gtk::Application) {
     .margin_bottom(10)
     .build();
 
+    // Channels to communicate with UI widgets
+    let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
     // Actions buttons menu
-    let actions_menu = ui::btn_action_row::build_actions_button();
+    let actions_menu = ui::btn_action_row::build_actions_button(tx.clone());
     main_box.add(&actions_menu);
 
     let tree_editor_box = gtk::BoxBuilder::new()
@@ -42,6 +47,19 @@ fn build_ui(app: &gtk::Application) {
     window.add(&main_box);
 
     window.show_all();
+
+
+    // Listen to UI changes
+    let tree_clone = tree.clone();
+    rx.attach(None, move |msg| {
+        match msg {
+            comms::CommEvents::UpdateRootTree() => {
+                ui::tree_view::update_tree_model(tree_clone.clone());
+            },
+        }
+        // Don't forget to include this!
+        glib::Continue(true)
+    });
 }
 
 fn main() {

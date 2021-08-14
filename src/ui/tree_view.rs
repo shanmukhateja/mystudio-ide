@@ -3,15 +3,14 @@ use gtk::prelude::*;
 use crate::workspace::Workspace;
 
 pub fn build_tree_view() -> gtk::TreeView {
-    
     let tree_model = build_tree_model();
 
     let tree = gtk::TreeViewBuilder::new()
-    .headers_visible(false)
-    .model(&tree_model)
-    .name("tree")
-    .border_width(10)
-    .build();
+        .headers_visible(false)
+        .model(&tree_model)
+        .name("tree")
+        .border_width(10)
+        .build();
 
     // Add column to render content
     let column = gtk::TreeViewColumn::new();
@@ -24,7 +23,7 @@ pub fn build_tree_view() -> gtk::TreeView {
     tree
 }
 
-fn build_tree_model() ->  gtk::ListStore {
+fn build_tree_model() -> gtk::ListStore {
     let store = gtk::ListStore::new(&[str::static_type()]);
 
     let entries = Workspace::get_files_list();
@@ -35,4 +34,8 @@ fn build_tree_model() ->  gtk::ListStore {
     }
 
     store
+}
+
+pub fn update_tree_model(tree: gtk::TreeView) {
+    tree.set_model(Some(&build_tree_model()));
 }
