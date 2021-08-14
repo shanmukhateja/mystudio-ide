@@ -66,17 +66,19 @@ fn build_ui(app: &gtk::Application) {
                 let workspace_path = Workspace::get_path();
                 let file_path = Path::new(&workspace_path).join(file_name).to_owned();
 
+                let mut content = String::from("Invalid file or not supported.");
                 if file_path.is_file() {
                     match std::fs::read(file_path) {
-                        Ok(content) => {
-                            let content = String::from_utf8(content).unwrap_or_default();
-                            tx_clone.send(CommEvents::UpdateRootTextViewContent(content)).ok();
+                        Ok(data) => {
+                            content = String::from_utf8(data).unwrap_or_default();
                         },
                         Err(error) => {
                             println!("Unable to read file, {}", error);
                         },
                     }
                 }
+
+                tx_clone.send(CommEvents::UpdateRootTextViewContent(content)).ok();
                 
             }
             CommEvents::UpdateRootTextViewContent(content) => {
