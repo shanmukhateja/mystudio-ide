@@ -20,7 +20,8 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
             let (tree_model, tree_iter) = selected_data.selected().unwrap();
             let selected_file = tree_model.value(&tree_iter, 0);
             let selected_file_string = selected_file.to_value().get::<String>().unwrap();
-            tx.send(CommEvents::RootTreeItemClicked(selected_file_string)).ok();
+            tx.send(CommEvents::RootTreeItemClicked(selected_file_string))
+                .ok();
         }
 
         gtk::Inhibit(true);

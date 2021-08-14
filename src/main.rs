@@ -1,10 +1,10 @@
 use comms::CommEvents;
-use gtk::prelude::*;
 use gtk::glib;
+use gtk::prelude::*;
 
+pub mod comms;
 mod ui;
 pub mod workspace;
-pub mod comms;
 
 fn build_ui(app: &gtk::Application) {
     let window = gtk::ApplicationWindowBuilder::new()
@@ -16,11 +16,11 @@ fn build_ui(app: &gtk::Application) {
         .build();
 
     let main_box = gtk::BoxBuilder::new()
-    .orientation(gtk::Orientation::Vertical)
-    .margin_top(10)
-    .margin_start(10)
-    .margin_bottom(10)
-    .build();
+        .orientation(gtk::Orientation::Vertical)
+        .margin_top(10)
+        .margin_start(10)
+        .margin_bottom(10)
+        .build();
 
     // Channels to communicate with UI widgets
     let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
@@ -30,16 +30,16 @@ fn build_ui(app: &gtk::Application) {
     main_box.add(&actions_menu);
 
     let tree_editor_box = gtk::BoxBuilder::new()
-    .orientation(gtk::Orientation::Horizontal)
-    .spacing(3)
-    .vexpand(true)
-    .border_width(10)
-    .build();
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(3)
+        .vexpand(true)
+        .border_width(10)
+        .build();
 
     // Tree
     let tree = ui::tree_view::build_tree_view(tx);
     tree_editor_box.add(&tree);
-    
+
     // Text Editor
     let editor = ui::text_view::build_text_view();
     tree_editor_box.add(&editor);
@@ -49,14 +49,13 @@ fn build_ui(app: &gtk::Application) {
 
     window.show_all();
 
-
     // Listen to UI changes
     let tree_clone = tree.clone();
     rx.attach(None, move |msg| {
         match msg {
             CommEvents::UpdateRootTree() => {
                 ui::tree_view::update_tree_model(tree_clone.clone());
-            },
+            }
             CommEvents::RootTreeItemClicked(file_name) => {
                 println!("{:?}", file_name);
             }
@@ -67,8 +66,10 @@ fn build_ui(app: &gtk::Application) {
 }
 
 fn main() {
-    let application =
-        gtk::Application::new(Some("com.github.shanmukhateja.my-studio-ide"), Default::default());
+    let application = gtk::Application::new(
+        Some("com.github.shanmukhateja.my-studio-ide"),
+        Default::default(),
+    );
 
     application.connect_activate(build_ui);
 
