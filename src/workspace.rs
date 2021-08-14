@@ -34,6 +34,10 @@ impl Workspace {
         let files = Vec::new();
         let dir_path_string = Workspace::get_path();
 
+        if dir_path_string.is_empty() {
+            return files;
+        }
+
         println!("dir_path_string: '{}'", dir_path_string);
         
         let dir_path = Path::new(&dir_path_string);
