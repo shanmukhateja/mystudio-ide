@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 
-use crate::workspace;
+use crate::workspace::Workspace;
 
 pub fn build_actions_button() -> gtk::Grid {
     let grid_view = gtk::GridBuilder::new().hexpand(true).vexpand(false).build();
@@ -45,7 +45,7 @@ fn on_open_dir_clicked() {
             let dir_path = dir_path_buf.to_str().unwrap();
 
             // update global workspace path
-            workspace::Workspace::update_path(dir_path.to_string());
+            Workspace::update_path(dir_path.to_string());
         }
         _ => (),
     };

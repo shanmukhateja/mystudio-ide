@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 
-use crate::workspace;
+use crate::workspace::Workspace;
 
 pub fn build_tree_view() -> gtk::TreeView {
     
@@ -27,7 +27,7 @@ pub fn build_tree_view() -> gtk::TreeView {
 fn build_tree_model() ->  gtk::ListStore {
     let store = gtk::ListStore::new(&[str::static_type()]);
 
-    let entries = workspace::Workspace::get_files_list();
+    let entries = Workspace::get_files_list();
 
     for (i, entry) in entries.into_iter().enumerate() {
         // add `+1` to 'position' parameter as `i` is 0-index based
