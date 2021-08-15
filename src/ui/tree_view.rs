@@ -3,11 +3,9 @@ use gtk::{ListStore, glib, prelude::*};
 use crate::{comms::CommEvents, workspace::Workspace};
 
 pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
-    let tree_model = build_tree_model();
 
     let tree = gtk::TreeViewBuilder::new()
         .headers_visible(false)
-        .model(&tree_model)
         .name("tree")
         .build();
 
@@ -22,6 +20,8 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
 
         gtk::Inhibit(true);
     });
+
+    update_tree_model(&tree);
 
     // Add column to render content
     let column = gtk::TreeViewColumn::new();
@@ -59,6 +59,6 @@ fn build_tree_model() -> ListStore {
     store
 }
 
-pub fn update_tree_model(tree: gtk::TreeView) {
+pub fn update_tree_model(tree: &gtk::TreeView) {
     tree.set_model(Some(&build_tree_model()));
 }

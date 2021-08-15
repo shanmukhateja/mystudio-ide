@@ -58,7 +58,7 @@ fn build_ui(app: &gtk::Application) {
     rx.attach(None, move |msg| {
         match msg {
             CommEvents::UpdateRootTree() => {
-                ui::tree_view::update_tree_model(tree_clone.clone());
+                ui::tree_view::update_tree_model(&tree_clone.clone());
                 // Reset UI
                 tx_clone.send(CommEvents::RootTreeItemClicked(None)).ok();
                 tx_clone
