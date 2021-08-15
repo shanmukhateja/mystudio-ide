@@ -12,6 +12,7 @@ pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     let grid_view = gtk::GridBuilder::new()
     .hexpand(true)
     .vexpand(false)
+    .margin_start(10)
     .column_spacing(10)
     .build();
 
