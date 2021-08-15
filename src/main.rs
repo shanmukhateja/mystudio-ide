@@ -33,22 +33,22 @@ fn build_ui(app: &gtk::Application) {
     let actions_menu = ui::btn_action_row::build_actions_button(tx.clone());
     main_box.add(&actions_menu);
 
-    let tree_editor_box = gtk::BoxBuilder::new()
+    let tree_editor_paned = gtk::PanedBuilder::new()
         .orientation(gtk::Orientation::Horizontal)
-        .spacing(3)
         .vexpand(true)
+        .position(155)
         .border_width(10)
         .build();
 
     // Tree
     let tree = ui::tree_view::build_tree_view(tx);
-    tree_editor_box.add(&tree);
+    tree_editor_paned.add(&tree);
 
     // Text Editor
     let editor = ui::text_view::build_text_view();
-    tree_editor_box.add(&editor);
+    tree_editor_paned.add(&editor);
 
-    main_box.add(&tree_editor_box);
+    main_box.add(&tree_editor_paned);
     window.add(&main_box);
 
     window.show_all();
