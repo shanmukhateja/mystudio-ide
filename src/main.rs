@@ -108,6 +108,8 @@ fn build_ui(app: &gtk::Application) {
                 match content {
                     Some(content) => {
                         text_editor.buffer().unwrap().set_text(&content.as_str());
+                        // Show cursor on text_view so user can start modifying file
+                        text_editor.grab_focus();
                     }
                     None => {
                         // Reset text content
