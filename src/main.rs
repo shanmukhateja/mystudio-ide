@@ -61,47 +61,71 @@ fn build_ui(app: &gtk::Application) {
         match msg {
             CommEvents::UpdateRootTree() => {
                 ui::tree_view::update_tree_model(tree_clone.clone());
+                // Reset UI
+                tx_clone.send(CommEvents::RootTreeItemClicked(None)).ok();
+                tx_clone
+                    .send(CommEvents::UpdateRootTextViewContent(None))
+                    .ok();
             }
             CommEvents::RootTreeItemClicked(file_name) => {
-                // Concat workspace dir path with selection
-                let workspace_path = Workspace::get_path();
-                let file_path = Path::new(&workspace_path).join(file_name).to_owned();
-                // FIXME: remove clone of `file_path`
-                let file_path_clone = &file_path.clone();
+                match file_name {
+                    Some(file_name) => {
+                        // Concat workspace dir path with selection
+                        let workspace_path = Workspace::get_path();
+                        let file_path = Path::new(&workspace_path).join(file_name).to_owned();
+                        // FIXME: remove clone of `file_path`
+                        let file_path_clone = &file_path.clone();
 
-                let mut content = String::from("Invalid file or not supported.");
-                if file_path.is_file() {
-                    match std::fs::read(file_path) {
-                        Ok(data) => {
-                            content = String::from_utf8(data).unwrap_or_default();
-                            // Update workspace's 'current open file' tracker
-                            let open_file_path = file_path_clone.as_os_str().to_str().unwrap();
-                            Workspace::set_open_file_path(String::from(open_file_path));
+                        let mut content = String::from("Invalid file or not supported.");
+                        if file_path.is_file() {
+                            match std::fs::read(file_path) {
+                                Ok(data) => {
+                                    content = String::from_utf8(data).unwrap_or_default();
+                                    // Update workspace's 'current open file' tracker
+                                    let open_file_path =
+                                        file_path_clone.as_os_str().to_str().unwrap();
+                                    Workspace::set_open_file_path(Some(String::from(
+                                        open_file_path,
+                                    )));
+                                }
+                                Err(error) => {
+                                    println!("Unable to read file, {}", error);
+                                }
+                            }
                         }
-                        Err(error) => {
-                            println!("Unable to read file, {}", error);
-                        }
+
+                        tx_clone
+                            .send(CommEvents::UpdateRootTextViewContent(Some(content)))
+                            .ok();
+                    }
+                    None => {
+                        // Reset workspace's 'current open file' tracker
+                        Workspace::set_open_file_path(None);
                     }
                 }
-
-                tx_clone
-                    .send(CommEvents::UpdateRootTextViewContent(content))
-                    .ok();
             }
             CommEvents::UpdateRootTextViewContent(content) => {
                 let text_editor = &editor;
 
-                text_editor.buffer().unwrap().set_text(&content.as_str());
+                match content {
+                    Some(content) => {
+                        text_editor.buffer().unwrap().set_text(&content.as_str());
+                    }
+                    None => {
+                        // Reset text content
+                        text_editor.buffer().unwrap().set_text("");
+                    }
+                }
             }
             CommEvents::SaveEditorChanges() => {
                 let text_editor = &editor;
 
                 let text_buffer = text_editor.buffer().unwrap();
 
-                let file_absolute_path = Workspace::get_open_file_path().unwrap();
-                
-
-                action_handler::save_file_changes(text_buffer, file_absolute_path);
+                let file_absolute_path = Workspace::get_open_file_path();
+                if !file_absolute_path.is_none() {
+                    action_handler::save_file_changes(text_buffer, file_absolute_path.unwrap());
+                }
             }
         }
         // Don't forget to include this!

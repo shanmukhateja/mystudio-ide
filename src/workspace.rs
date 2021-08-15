@@ -31,10 +31,10 @@ impl Workspace {
         WORKSPACE_PATH.with(|f| f.borrow().open_file.clone())
     }
 
-    pub fn set_open_file_path(new_file_path: String) {
+    pub fn set_open_file_path(new_file_path: Option<String>) {
         WORKSPACE_PATH.with(move |f| {
             let c_dir_path = f.borrow().dir_path.clone();
-            *f.borrow_mut() = Workspace { open_file: Some(new_file_path), dir_path: c_dir_path };
+            *f.borrow_mut() = Workspace { open_file: new_file_path, dir_path: c_dir_path };
         });
     }
 

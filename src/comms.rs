@@ -4,9 +4,9 @@ pub enum CommEvents {
     UpdateRootTree(),
 
     // used to read text files
-    RootTreeItemClicked(String),
+    RootTreeItemClicked(Option<String>),
     // Sets text to RootTextView
-    UpdateRootTextViewContent(String),
+    UpdateRootTextViewContent(Option<String>),
     // Save Changes
     SaveEditorChanges()
 }
