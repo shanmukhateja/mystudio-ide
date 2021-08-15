@@ -39,11 +39,15 @@ fn build_tree_model() -> ListStore {
 
     let mut entries = Workspace::get_files_list();
     
-    // remove workspace path from list
-    if entries.len() > 0 {
-        entries = entries.drain(1..).collect::<Vec<String>>();
+    // return empty store when no files
+    if entries.len() <= 1 {
+        return store;
     }
+    
+    // remove workspace path from list
+    entries = entries.drain(1..).collect::<Vec<String>>();
 
+    // Iterate over `entries` and insert new data
     for (i, entry) in entries.into_iter().enumerate() {
         // add `+1` to 'position' parameter as `i` is 0-index based
         store.insert_with_values(
