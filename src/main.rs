@@ -36,7 +36,7 @@ fn build_ui(app: &gtk::Application) {
     let tree_editor_paned = gtk::PanedBuilder::new()
         .orientation(gtk::Orientation::Horizontal)
         .vexpand(true)
-        .position(155)
+        .position(200)
         .border_width(10)
         .build();
 

@@ -5,8 +5,10 @@ use crate::{comms::CommEvents, workspace::Workspace};
 pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
 
     let tree = gtk::TreeViewBuilder::new()
-        .headers_visible(false)
+        .headers_visible(true)
+        .headers_clickable(false)
         .name("tree")
+        .margin_top(5)
         .build();
 
     tree.selection().connect_changed(move |selected_data| {
@@ -28,6 +30,8 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
     let cell = gtk::CellRendererText::new();
 
     column.pack_start(&cell, true);
+    column.set_title(&"Workspace Explorer".to_uppercase());
+    column.set_alignment(0.5);
     column.add_attribute(&cell, "text", 0);
     tree.append_column(&column);
 
