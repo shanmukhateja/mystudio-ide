@@ -22,9 +22,7 @@ fn build_ui(app: &gtk::Application) {
 
     let main_box = gtk::BoxBuilder::new()
         .orientation(gtk::Orientation::Vertical)
-        .margin_top(10)
-        .margin_start(10)
-        .margin_bottom(10)
+        .margin(10)
         .build();
 
     // Channels to communicate with UI widgets

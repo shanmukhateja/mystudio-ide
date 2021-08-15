@@ -9,7 +9,6 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
         .headers_visible(false)
         .model(&tree_model)
         .name("tree")
-        .border_width(10)
         .build();
 
     tree.selection().connect_changed(move |selected_data| {

@@ -3,7 +3,6 @@ pub fn build_text_view() -> gtk::TextView {
         .editable(true)
         .has_focus(true)
         .hexpand(true)
-        .margin_start(10)
         .build();
 
     text_view
