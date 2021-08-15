@@ -5,6 +5,11 @@ use crate::workspace::Workspace;
 use gtk::glib;
 
 pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
+
+    // FIXME: find better way than cloning `tx` for each closure
+    let tx_arc = tx.clone();
+    let tx_arc2 = tx_arc.clone();
+
     let grid_view = gtk::GridBuilder::new().hexpand(true).vexpand(false).build();
 
     // Open Dir button
@@ -14,7 +19,20 @@ pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
         .build();
 
     open_dir_button.connect_button_release_event(move |_btn, _y| {
-        on_open_dir_clicked(tx.clone());
+        on_open_dir_clicked(&tx_arc);
+        gtk::Inhibit(true)
+    });
+
+    grid_view.add(&open_dir_button);
+
+    // Save changes button
+    let open_dir_button = gtk::ButtonBuilder::new()
+        .label("Save Changes")
+        .focus_on_click(true)
+        .build();
+
+    open_dir_button.connect_button_release_event(move |_btn, _y| {
+        on_save_changes_clicked(&tx_arc2);
         gtk::Inhibit(true)
     });
 
@@ -23,7 +41,7 @@ pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     grid_view
 }
 
-fn on_open_dir_clicked(tx: glib::Sender<CommEvents>) {
+fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
@@ -56,4 +74,8 @@ fn on_open_dir_clicked(tx: glib::Sender<CommEvents>) {
     };
 
     chooser.hide();
+}
+
+fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
+    tx.send(CommEvents::SaveEditorChanges()).ok();
 }

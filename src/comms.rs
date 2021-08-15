@@ -6,5 +6,7 @@ pub enum CommEvents {
     // used to read text files
     RootTreeItemClicked(String),
     // Sets text to RootTextView
-    UpdateRootTextViewContent(String)
+    UpdateRootTextViewContent(String),
+    // Save Changes
+    SaveEditorChanges()
 }

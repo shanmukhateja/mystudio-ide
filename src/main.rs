@@ -6,6 +6,7 @@ use gtk::prelude::*;
 
 use crate::workspace::Workspace;
 
+mod action_handler;
 pub mod comms;
 mod ui;
 pub mod workspace;
@@ -65,28 +66,43 @@ fn build_ui(app: &gtk::Application) {
                 // Concat workspace dir path with selection
                 let workspace_path = Workspace::get_path();
                 let file_path = Path::new(&workspace_path).join(file_name).to_owned();
+                // FIXME: remove clone of `file_path`
+                let file_path_clone = &file_path.clone();
 
                 let mut content = String::from("Invalid file or not supported.");
                 if file_path.is_file() {
                     match std::fs::read(file_path) {
                         Ok(data) => {
                             content = String::from_utf8(data).unwrap_or_default();
-                        },
+                            // Update workspace's 'current open file' tracker
+                            let open_file_path = file_path_clone.as_os_str().to_str().unwrap();
+                            Workspace::set_open_file_path(String::from(open_file_path));
+                        }
                         Err(error) => {
                             println!("Unable to read file, {}", error);
-                        },
+                        }
                     }
                 }
 
-                tx_clone.send(CommEvents::UpdateRootTextViewContent(content)).ok();
-                
+                tx_clone
+                    .send(CommEvents::UpdateRootTextViewContent(content))
+                    .ok();
             }
             CommEvents::UpdateRootTextViewContent(content) => {
                 let text_editor = &editor;
 
                 text_editor.buffer().unwrap().set_text(&content.as_str());
-                // text_editor.queue_draw();
-            },
+            }
+            CommEvents::SaveEditorChanges() => {
+                let text_editor = &editor;
+
+                let text_buffer = text_editor.buffer().unwrap();
+
+                let file_absolute_path = Workspace::get_open_file_path().unwrap();
+                
+
+                action_handler::save_file_changes(text_buffer, file_absolute_path);
+            }
         }
         // Don't forget to include this!
         glib::Continue(true)
