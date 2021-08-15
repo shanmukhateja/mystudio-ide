@@ -5,16 +5,25 @@ use crate::workspace::Workspace;
 use gtk::glib;
 
 pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
-
     // FIXME: find better way than cloning `tx` for each closure
     let tx_arc = tx.clone();
     let tx_arc2 = tx_arc.clone();
 
-    let grid_view = gtk::GridBuilder::new().hexpand(true).vexpand(false).build();
+    let grid_view = gtk::GridBuilder::new()
+    .hexpand(true)
+    .vexpand(false)
+    .column_spacing(10)
+    .build();
 
     // Open Dir button
+    let open_dir_image = gtk::ImageBuilder::new()
+    .icon_name("folder-open")
+    .icon_size(gtk::IconSize::LargeToolbar)
+    .build();
     let open_dir_button = gtk::ButtonBuilder::new()
-        .label("Open Folder")
+        .image(&open_dir_image)
+        .always_show_image(true)
+        .tooltip_text("Open Workspace")
         .focus_on_click(true)
         .build();
 
@@ -26,17 +35,24 @@ pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     grid_view.add(&open_dir_button);
 
     // Save changes button
-    let open_dir_button = gtk::ButtonBuilder::new()
-        .label("Save Changes")
+    let save_changes_icon = gtk::ImageBuilder::new()
+    .icon_name("media-floppy")
+    .icon_size(gtk::IconSize::LargeToolbar)
+    .build();
+    let save_changes_button = gtk::ButtonBuilder::new()
+        .image(&save_changes_icon)
+        .always_show_image(true)
+        .tooltip_text("Save Changes")
         .focus_on_click(true)
         .build();
 
-    open_dir_button.connect_button_release_event(move |_btn, _y| {
+    save_changes_button.connect_button_release_event(move |_btn, _y| {
         on_save_changes_clicked(&tx_arc2);
-        gtk::Inhibit(true)
+        // Note: Fixes an issue where button has focus on hover after first use  
+        gtk::Inhibit(false)
     });
 
-    grid_view.add(&open_dir_button);
+    grid_view.add(&save_changes_button);
 
     grid_view
 }
