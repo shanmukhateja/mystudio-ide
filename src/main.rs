@@ -123,7 +123,7 @@ fn build_ui(app: &gtk::Application) {
                 let text_buffer = text_editor.buffer().unwrap();
 
                 let file_absolute_path = Workspace::get_open_file_path();
-                if !file_absolute_path.is_none() {
+                if file_absolute_path.is_some() {
                     action_handler::save_file_changes(text_buffer, file_absolute_path.unwrap());
                 }
             }
