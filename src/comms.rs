@@ -8,5 +8,5 @@ pub enum CommEvents {
     // Sets text to RootTextView
     UpdateRootTextViewContent(Option<String>),
     // Save Changes
-    SaveEditorChanges()
+    SaveEditorChanges(),
 }

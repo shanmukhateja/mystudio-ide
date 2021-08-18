@@ -1,25 +1,28 @@
-use std::cell::RefCell;
 use jwalk::WalkDir;
+use std::cell::RefCell;
 
 // Holds reference to Workspace
 thread_local!(static WORKSPACE_PATH: RefCell<Workspace> = RefCell::new(Workspace::new()));
 
 pub struct Workspace {
     dir_path: String,
-    open_file: Option<String>
+    open_file: Option<String>,
 }
 
 impl Workspace {
     pub fn new() -> Self {
         Workspace {
             dir_path: String::new(),
-            open_file: None
+            open_file: None,
         }
     }
 
     pub fn update_path(new_path: String) {
         WORKSPACE_PATH.with(|f| {
-            *f.borrow_mut() = Workspace { dir_path: new_path, open_file: None };
+            *f.borrow_mut() = Workspace {
+                dir_path: new_path,
+                open_file: None,
+            };
         });
     }
 
@@ -34,7 +37,10 @@ impl Workspace {
     pub fn set_open_file_path(new_file_path: Option<String>) {
         WORKSPACE_PATH.with(move |f| {
             let c_dir_path = f.borrow().dir_path.clone();
-            *f.borrow_mut() = Workspace { open_file: new_file_path, dir_path: c_dir_path };
+            *f.borrow_mut() = Workspace {
+                open_file: new_file_path,
+                dir_path: c_dir_path,
+            };
         });
     }
 
@@ -50,15 +56,16 @@ impl Workspace {
             .into_iter()
             .map(|entry| {
                 let entry = entry.unwrap();
-                
+
                 // remove <path> + "/" chars from ListStore entries
                 let mut replace_path = String::from(&dir_path_string);
                 replace_path.push_str("/");
-                
-                entry.path()
-                .to_str()
-                .unwrap()
-                .replace(replace_path.as_str(), "")
+
+                entry
+                    .path()
+                    .to_str()
+                    .unwrap()
+                    .replace(replace_path.as_str(), "")
             })
             .collect::<Vec<String>>();
 
