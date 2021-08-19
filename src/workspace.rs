@@ -1,3 +1,4 @@
+use gtk::{prelude::TreeStoreExtManual, TreeIter};
 use jwalk::WalkDir;
 use std::cell::RefCell;
 
@@ -44,31 +45,54 @@ impl Workspace {
         });
     }
 
-    pub fn get_files_list() -> Vec<String> {
+    pub fn get_files_list(store: gtk::TreeStore) -> gtk::TreeStore {
         let dir_path_string = Workspace::get_path();
 
         if dir_path_string.is_empty() {
-            return Vec::new();
+            return store;
         }
 
-        let files = WalkDir::new(&dir_path_string)
-            .skip_hidden(true)
-            .into_iter()
-            .map(|entry| {
-                let entry = entry.unwrap();
+        let mut files = WalkDir::new(&dir_path_string).skip_hidden(true).into_iter();
 
-                // remove <path> + "/" chars from ListStore entries
-                let mut replace_path = String::from(&dir_path_string);
-                replace_path.push_str("/");
+        let root_dir = &files.next().unwrap().unwrap();
+        let root_iter = store.insert_with_values(
+            None,
+            Some(1 as u32),
+            &[(0 as u32, &root_dir.file_name().to_str())],
+        );
 
-                entry
-                    .path()
-                    .to_str()
-                    .unwrap()
-                    .replace(replace_path.as_str(), "")
-            })
-            .collect::<Vec<String>>();
+        let mut prev_node: Option<TreeIter> = None;
+        for (i, entry) in files.enumerate() {
+            let entry = entry.unwrap();
 
-        files
+            // remove <path> + "/" chars from TreeStore entries
+            let mut replace_path = String::from(&dir_path_string);
+            replace_path.push_str("/");
+
+            let entry_path = entry.path();
+            println!("working on entry: {}", &entry_path.display());
+
+            let entry_str = entry_path.file_name().unwrap().to_str().unwrap();
+
+            // metadata
+            let entry_path = std::path::Path::new(&entry_str);
+            if entry_path.is_dir() {
+                prev_node =
+                    Some(store.insert_with_values(Some(&root_iter), None, &[(0, &entry_str)]));
+            } else {
+                if prev_node.as_ref().is_none() {
+                    prev_node = None;
+                } else {
+                    // Option<&TreeIter>
+                }
+                store.insert_with_values(
+                    Some(prev_node.as_ref().unwrap()),
+                    Some((i as u32) + 1),
+                    &[(0, &entry_str)],
+                );
+            }
+        }
+
+        store
     }
 }

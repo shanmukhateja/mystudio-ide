@@ -1,4 +1,4 @@
-use gtk::{glib, prelude::*, ListStore};
+use gtk::{TreeStore, glib, prelude::*};
 
 use crate::{comms::CommEvents, workspace::Workspace};
 
@@ -42,26 +42,9 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
     tree
 }
 
-fn build_tree_model() -> ListStore {
-    let store = ListStore::new(&[str::static_type()]);
-
-    let mut entries = Workspace::get_files_list();
-
-    // return empty store when no files
-    if entries.len() <= 1 {
-        return store;
-    }
-
-    // remove workspace path from list
-    entries = entries.drain(1..).collect::<Vec<String>>();
-
-    // Iterate over `entries` and insert new data
-    for (i, entry) in entries.into_iter().enumerate() {
-        // add `+1` to 'position' parameter as `i` is 0-index based
-        store.insert_with_values(Some(i as u32 + 1), &[(0 as u32, &entry)]);
-    }
-
-    store
+fn build_tree_model() -> TreeStore {
+    let store = TreeStore::new(&[str::static_type()]);
+    Workspace::get_files_list(store)
 }
 
 pub fn update_tree_model(tree: &gtk::TreeView) {
