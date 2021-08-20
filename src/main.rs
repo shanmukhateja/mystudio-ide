@@ -52,7 +52,6 @@ fn build_ui(app: &gtk::Application) {
 
             // Text Editor
             G_TEXT_VIEW.with(|editor| {
-
                 *editor.borrow_mut() = Some(ui::text_view::build_text_view());
                 tree_editor_paned.add(&editor.borrow().clone().unwrap());
 
@@ -62,7 +61,7 @@ fn build_ui(app: &gtk::Application) {
                 window.borrow().clone().unwrap().show_all();
             });
 
-                // Listen to UI changes
+            // Listen to UI changes
             comms::handle_comm_event(tx, rx);
         });
     });
