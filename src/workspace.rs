@@ -72,23 +72,20 @@ impl Workspace {
             let entry_path = entry.path();
             println!("working on entry: {}", &entry_path.display());
 
-            let entry_str = entry_path.file_name().unwrap().to_str().unwrap();
+            let entry_file_str = entry_path.file_name().unwrap().to_str().unwrap();
 
             // metadata
-            let entry_path = std::path::Path::new(&entry_str);
             if entry_path.is_dir() {
                 prev_node =
-                    Some(store.insert_with_values(Some(&root_iter), None, &[(0, &entry_str)]));
+                    Some(store.insert_with_values(Some(&root_iter), None, &[(0, &entry_file_str)]));
             } else {
                 if prev_node.as_ref().is_none() {
                     prev_node = None;
-                } else {
-                    // Option<&TreeIter>
                 }
                 store.insert_with_values(
-                    Some(prev_node.as_ref().unwrap()),
+                    prev_node.as_ref(),
                     Some((i as u32) + 1),
-                    &[(0, &entry_str)],
+                    &[(0, &entry_file_str)],
                 );
             }
         }
