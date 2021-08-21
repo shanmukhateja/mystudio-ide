@@ -5,6 +5,12 @@ use std::cell::RefCell;
 // Holds reference to Workspace
 thread_local!(static WORKSPACE_PATH: RefCell<Workspace> = RefCell::new(Workspace::new()));
 
+// FIXME: Move this to separate file
+struct TreeInfo {
+    pub value: String,
+    pub iter: TreeIter,
+}
+
 pub struct Workspace {
     dir_path: String,
     open_file: Option<String>,
@@ -52,7 +58,10 @@ impl Workspace {
             return store;
         }
 
-        let mut files = WalkDir::new(&dir_path_string).skip_hidden(true).into_iter();
+        let mut files = WalkDir::new(&dir_path_string)
+            .skip_hidden(true)
+            .sort(true)
+            .into_iter();
 
         let root_dir = &files.next().unwrap().unwrap();
         let root_iter = store.insert_with_values(
@@ -61,32 +70,51 @@ impl Workspace {
             &[(0 as u32, &root_dir.file_name().to_str())],
         );
 
-        let mut prev_node: Option<TreeIter> = None;
-        for (i, entry) in files.enumerate() {
+        // Store TreePath of a TreeIter
+        let mut tree_info = Vec::<TreeInfo>::new();
+        tree_info.push(TreeInfo {
+            iter: root_iter.clone(),
+            value: String::from(root_dir.clone().file_name().to_str().unwrap()),
+        });
+
+        for (_, entry) in files.enumerate() {
             let entry = entry.unwrap();
 
-            // remove <path> + "/" chars from TreeStore entries
-            let mut replace_path = String::from(&dir_path_string);
-            replace_path.push_str("/");
-
             let entry_path = entry.path();
-            println!("working on entry: {}", &entry_path.display());
 
+            let entry_path_str = entry_path.to_str().unwrap();
+            let entry_parent_str = entry_path.parent().unwrap().to_str().unwrap();
             let entry_file_str = entry_path.file_name().unwrap().to_str().unwrap();
+
+            // Try to locate parent TreeIter entry using parent
+            let found_info = tree_info.iter().find(|e| e.value == entry_parent_str);
+
+            // If parent isn't found, treat it as child of `root_iter`
+            let parent_iter = if found_info.is_some() {
+                &found_info.unwrap().iter
+            } else {
+                &root_iter
+            };
 
             // metadata
             if entry_path.is_dir() {
-                prev_node =
-                    Some(store.insert_with_values(Some(&root_iter), None, &[(0, &entry_file_str)]));
+                let m_iter =
+                    store.insert_with_values(Some(parent_iter), None, &[(0, &entry_file_str)]);
+
+                // Save to info list
+                tree_info.push(TreeInfo {
+                    iter: m_iter,
+                    value: String::from(entry_path_str),
+                });
             } else {
-                if prev_node.as_ref().is_none() {
-                    prev_node = None;
-                }
-                store.insert_with_values(
-                    prev_node.as_ref(),
-                    Some((i as u32) + 1),
-                    &[(0, &entry_file_str)],
-                );
+                let m_iter =
+                    store.insert_with_values(Some(parent_iter), None, &[(0, &entry_file_str)]);
+
+                // Save to info list
+                tree_info.push(TreeInfo {
+                    iter: m_iter,
+                    value: String::from(entry_path_str),
+                });
             }
         }
 
