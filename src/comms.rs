@@ -1,9 +1,13 @@
 use std::path::Path;
 
 use gtk::glib::{self, Receiver, Sender};
-use gtk::prelude::{TextBufferExt, TextViewExt, WidgetExt};
+use gtk::prelude::{ObjectExt, TextBufferExt, TextViewExt, WidgetExt};
 
-use crate::{action_handler, ui, workspace::Workspace};
+use crate::{
+    action_handler,
+    ui::{self, tree_model::RootTreeModel},
+    workspace::Workspace,
+};
 
 use crate::{G_TEXT_VIEW, G_TREE};
 
@@ -13,7 +17,7 @@ pub enum CommEvents {
     UpdateRootTree(),
 
     // used to read text files
-    RootTreeItemClicked(Option<String>),
+    RootTreeItemClicked(Option<RootTreeModel>),
     // Sets text to RootTextView
     UpdateRootTextViewContent(Option<String>),
     // Save Changes
@@ -31,12 +35,16 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     tx.send(CommEvents::UpdateRootTextViewContent(None)).ok();
                 });
             }
-            CommEvents::RootTreeItemClicked(file_name) => {
-                match file_name {
-                    Some(file_name) => {
+            CommEvents::RootTreeItemClicked(tree_model) => {
+                match tree_model {
+                    Some(tree_model) => {
                         // Concat workspace dir path with selection
-                        let workspace_path = Workspace::get_path();
-                        let file_path = Path::new(&workspace_path).join(file_name).to_owned();
+                        let tree_item_abs_path = &tree_model
+                            .property("abs-path")
+                            .unwrap()
+                            .get::<String>()
+                            .unwrap();
+                        let file_path = Path::new(tree_item_abs_path);
                         // FIXME: remove clone of `file_path`
                         let file_path_clone = &file_path.clone();
 

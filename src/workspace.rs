@@ -1,4 +1,7 @@
-use gtk::{prelude::TreeStoreExtManual, TreeIter};
+use gtk::{
+    prelude::{ObjectExt, TreeStoreExtManual},
+    TreeIter, TreeStore,
+};
 use jwalk::WalkDir;
 use std::cell::RefCell;
 
@@ -51,7 +54,7 @@ impl Workspace {
         });
     }
 
-    pub fn get_files_list(store: gtk::TreeStore) -> gtk::TreeStore {
+    pub fn get_files_list(store: TreeStore) -> TreeStore {
         let dir_path_string = Workspace::get_path();
 
         if dir_path_string.is_empty() {
@@ -64,11 +67,21 @@ impl Workspace {
             .into_iter();
 
         let root_dir = &files.next().unwrap().unwrap();
-        let root_iter = store.insert_with_values(
-            None,
-            Some(1 as u32),
-            &[(0 as u32, &root_dir.file_name().to_str())],
-        );
+
+        // Custom Model
+        let tree_model_struct = crate::ui::tree_model::RootTreeModel::new();
+        tree_model_struct
+            .set_property("file-name", &root_dir.file_name().to_str().unwrap())
+            .ok();
+        tree_model_struct
+            .set_property(
+                "abs-path",
+                &root_dir.parent_path().as_os_str().to_str().unwrap(),
+            )
+            .ok();
+
+        let root_iter =
+            store.insert_with_values(None, Some(1 as u32), &[(0 as u32, &tree_model_struct)]);
 
         // Store TreePath of a TreeIter
         let mut tree_info = Vec::<TreeInfo>::new();
@@ -96,10 +109,19 @@ impl Workspace {
                 &root_iter
             };
 
+            // Custom Model
+            let tree_model_struct = crate::ui::tree_model::RootTreeModel::new();
+            tree_model_struct
+                .set_property("file-name", &entry_file_str)
+                .ok();
+            tree_model_struct
+                .set_property("abs-path", &entry_path_str)
+                .ok();
+
             // metadata
             if entry_path.is_dir() {
                 let m_iter =
-                    store.insert_with_values(Some(parent_iter), None, &[(0, &entry_file_str)]);
+                    store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
 
                 // Save to info list
                 tree_info.push(TreeInfo {
@@ -108,7 +130,7 @@ impl Workspace {
                 });
             } else {
                 let m_iter =
-                    store.insert_with_values(Some(parent_iter), None, &[(0, &entry_file_str)]);
+                    store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
 
                 // Save to info list
                 tree_info.push(TreeInfo {
