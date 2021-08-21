@@ -48,12 +48,22 @@ fn build_ui(app: &gtk::Application) {
         // Tree
         G_TREE.with(|tree| {
             *tree.borrow_mut() = Some(ui::tree_view::build_tree_view(tx_clone));
-            tree_editor_paned.add(&tree.borrow().clone().unwrap());
+
+            // Scroll Window (required to make Tree scrollable)
+            let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
+            &scroll_window.add(&tree.borrow().clone().unwrap());
+
+            tree_editor_paned.add(&scroll_window.clone());
 
             // Text Editor
             G_TEXT_VIEW.with(|editor| {
                 *editor.borrow_mut() = Some(ui::text_view::build_text_view());
-                tree_editor_paned.add(&editor.borrow().clone().unwrap());
+
+                // Scroll Window (required to make Editor scrollable)
+                let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
+                &scroll_window.add(&editor.borrow().clone().unwrap());
+
+                tree_editor_paned.add(&scroll_window.clone());
 
                 main_box.add(&tree_editor_paned);
                 window.borrow().clone().unwrap().add(&main_box);
