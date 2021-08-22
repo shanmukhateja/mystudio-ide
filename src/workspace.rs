@@ -5,6 +5,8 @@ use gtk::{
 use jwalk::WalkDir;
 use std::cell::RefCell;
 
+use crate::ui::tree_model::{RootTreeModel, TreeNodeType};
+
 // Holds reference to Workspace
 thread_local!(static WORKSPACE_PATH: RefCell<Workspace> = RefCell::new(Workspace::new()));
 
@@ -69,7 +71,7 @@ impl Workspace {
         let root_dir = &files.next().unwrap().unwrap();
 
         // Custom Model
-        let tree_model_struct = crate::ui::tree_model::RootTreeModel::new();
+        let tree_model_struct = RootTreeModel::new();
         tree_model_struct
             .set_property("file-name", &root_dir.file_name().to_str().unwrap())
             .ok();
@@ -78,6 +80,9 @@ impl Workspace {
                 "abs-path",
                 &root_dir.parent_path().as_os_str().to_str().unwrap(),
             )
+            .ok();
+        tree_model_struct
+            .set_property("item-type", &TreeNodeType::Workspace)
             .ok();
 
         let root_iter =
@@ -110,13 +115,19 @@ impl Workspace {
             };
 
             // Custom Model
-            let tree_model_struct = crate::ui::tree_model::RootTreeModel::new();
+            let tree_model_struct = RootTreeModel::new();
+            let item_type = if entry_path.is_dir() {
+                &TreeNodeType::Directory
+            } else {
+                &TreeNodeType::File
+            };
             tree_model_struct
                 .set_property("file-name", &entry_file_str)
                 .ok();
             tree_model_struct
                 .set_property("abs-path", &entry_path_str)
                 .ok();
+            tree_model_struct.set_property("item-type", &item_type).ok();
 
             // metadata
             if entry_path.is_dir() {

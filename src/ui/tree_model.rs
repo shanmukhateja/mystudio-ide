@@ -2,9 +2,27 @@ use std::cell::RefCell;
 
 use gtk::glib;
 
+#[derive(Debug, Eq, PartialEq, Clone, Copy, glib::GEnum)]
+#[repr(i32)]
+#[genum(type_name = "TreeNodeType")]
+pub enum TreeNodeType {
+    Unknown = -1,
+    Directory = 0,
+    File = 1,
+    Workspace = 2,
+}
+
+impl Default for TreeNodeType {
+    fn default() -> Self {
+        TreeNodeType::Unknown
+    }
+}
+
 mod imp {
+    use std::cell::Cell;
+
     use gtk::{
-        prelude::ToValue,
+        prelude::{StaticType, ToValue},
         subclass::prelude::{ObjectImpl, ObjectImplExt, ObjectSubclass},
     };
 
@@ -14,6 +32,7 @@ mod imp {
     pub struct RootTreeModel {
         file_name: RefCell<Option<String>>,
         abs_path: RefCell<Option<String>>,
+        item_type: Cell<Option<TreeNodeType>>,
     }
 
     #[glib::object_subclass]
@@ -45,6 +64,14 @@ mod imp {
                         None,
                         glib::ParamFlags::READWRITE,
                     ),
+                    glib::ParamSpec::new_enum(
+                        "item-type",
+                        "Node item type",
+                        "item-type",
+                        imp::TreeNodeType::static_type(),
+                        TreeNodeType::Unknown as i32,
+                        glib::ParamFlags::READWRITE,
+                    ),
                 ]
             });
 
@@ -71,8 +98,14 @@ mod imp {
                         .expect("type conformity checked by `Object::set_property`");
                     self.abs_path.replace(abs_path);
                 }
+                "item-type" => {
+                    let item_type = value
+                        .get()
+                        .expect("type conformity checked by `Object::set_property`");
+                    self.item_type.replace(Some(item_type));
+                }
                 e => {
-                    println!("got e: {} for set_property", e);
+                    println!("requested set-property for unknown property: '{}'", e);
                 }
             }
         }
@@ -81,8 +114,9 @@ mod imp {
             match pspec.name() {
                 "file-name" => self.file_name.borrow().to_value(),
                 "abs-path" => self.abs_path.borrow().to_value(),
+                "item-type" => self.item_type.get().unwrap().to_value(),
                 e => {
-                    println!("e: {}", e);
+                    println!("requested unknown property: '{}'", e);
                     e.to_value()
                 }
             }
