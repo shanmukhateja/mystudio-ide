@@ -14,10 +14,13 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
         .build();
 
     tree.selection().connect_changed(move |selected_data| {
-        let selected_data = selected_data.to_owned();
-        let selection_count = selected_data.count_selected_rows();
-        if selection_count > 0 {
-            let (tree_model, tree_iter) = selected_data.selected().unwrap();
+        let selected_data = selected_data.selected();
+        if selected_data.is_some() {
+            let (tree_model, tree_iter) = selected_data.unwrap();
+            // do not emit event for directory
+            if tree_model.iter_children(Some(&tree_iter)).is_some() {
+                return;
+            }
             let selected_file = tree_model
                 .value(&tree_iter, 0)
                 .to_value()
@@ -27,7 +30,6 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
                 .ok();
         }
 
-        gtk::Inhibit(true);
     });
 
     update_tree_model(&tree);
