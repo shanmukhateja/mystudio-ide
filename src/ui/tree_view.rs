@@ -19,17 +19,21 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
         let selected_data = selected_data.selected();
         if selected_data.is_some() {
             let (tree_model, tree_iter) = selected_data.unwrap();
-            // do not emit event for directory
-            if tree_model.iter_children(Some(&tree_iter)).is_some() {
-                return;
-            }
             let selected_file = tree_model
                 .value(&tree_iter, 0)
                 .to_value()
                 .get::<RootTreeModel>()
                 .unwrap();
-            tx.send(CommEvents::RootTreeItemClicked(Some(selected_file)))
-                .ok();
+            let item_type = selected_file
+                .property("item-type")
+                .unwrap()
+                .get::<TreeNodeType>()
+                .unwrap();
+            // Emit event if selected node is file
+            if item_type == TreeNodeType::File {
+                tx.send(CommEvents::RootTreeItemClicked(Some(selected_file)))
+                    .ok();
+            }
         }
     });
 
