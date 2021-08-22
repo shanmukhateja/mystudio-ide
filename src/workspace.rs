@@ -129,26 +129,14 @@ impl Workspace {
                 .ok();
             tree_model_struct.set_property("item-type", &item_type).ok();
 
-            // metadata
-            if entry_path.is_dir() {
-                let m_iter =
-                    store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
+            let m_iter =
+                store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
 
-                // Save to info list
-                tree_info.push(TreeInfo {
-                    iter: m_iter,
-                    value: String::from(entry_path_str),
-                });
-            } else {
-                let m_iter =
-                    store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
-
-                // Save to info list
-                tree_info.push(TreeInfo {
-                    iter: m_iter,
-                    value: String::from(entry_path_str),
-                });
-            }
+            // Save to info list
+            tree_info.push(TreeInfo {
+                iter: m_iter,
+                value: String::from(entry_path_str),
+            });
         }
 
         store
