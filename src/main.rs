@@ -5,6 +5,7 @@ use gtk::prelude::*;
 
 mod action_handler;
 pub mod comms;
+mod keyboard;
 mod ui;
 pub mod workspace;
 
@@ -33,6 +34,7 @@ fn build_ui(app: &gtk::Application) {
         // Channels to communicate with UI widgets
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let tx_clone = tx.clone();
+        let tx_clone2 = tx.clone();
 
         // Actions buttons menu
         let actions_menu = ui::btn_action_row::build_actions_button(tx_clone.clone().clone());
@@ -73,6 +75,9 @@ fn build_ui(app: &gtk::Application) {
 
             // Listen to UI changes
             comms::handle_comm_event(tx, rx);
+
+            // Keyboard events
+            crate::keyboard::listen_for_events(tx_clone2.clone());
         });
     });
 }

@@ -1,8 +1,8 @@
 use gtk::prelude::*;
+use gtk::glib;
 
 use crate::comms::CommEvents;
 use crate::workspace::Workspace;
-use gtk::glib;
 
 pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     // FIXME: find better way than cloning `tx` for each closure
@@ -58,7 +58,7 @@ pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     grid_view
 }
 
-fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
+pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
@@ -93,6 +93,6 @@ fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     chooser.hide();
 }
 
-fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
+pub fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
     tx.send(CommEvents::SaveEditorChanges()).ok();
 }
