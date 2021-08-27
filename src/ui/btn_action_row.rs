@@ -1,5 +1,5 @@
-use gtk::prelude::*;
 use gtk::glib;
+use gtk::prelude::*;
 
 use crate::comms::CommEvents;
 use crate::workspace::Workspace;
