@@ -137,3 +137,9 @@ impl RootTreeModel {
         glib::Object::new(&[]).unwrap()
     }
 }
+
+impl Default for RootTreeModel {
+    fn default() -> Self {
+        RootTreeModel::new()
+    }
+}

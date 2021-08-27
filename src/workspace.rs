@@ -85,15 +85,13 @@ impl Workspace {
             .set_property("item-type", &TreeNodeType::Workspace)
             .ok();
 
-        let root_iter =
-            store.insert_with_values(None, Some(1 as u32), &[(0 as u32, &tree_model_struct)]);
+        let root_iter = store.insert_with_values(None, Some(1_u32), &[(0_u32, &tree_model_struct)]);
 
         // Store TreePath of a TreeIter
-        let mut tree_info = Vec::<TreeInfo>::new();
-        tree_info.push(TreeInfo {
+        let mut tree_info = vec![TreeInfo {
             iter: root_iter.clone(),
-            value: String::from(root_dir.clone().file_name().to_str().unwrap()),
-        });
+            value: String::from(root_dir.file_name().to_str().unwrap()),
+        }];
 
         for (_, entry) in files.enumerate() {
             let entry = entry.unwrap();
@@ -108,12 +106,10 @@ impl Workspace {
             let found_info = tree_info.iter().find(|e| e.value == entry_parent_str);
 
             // If parent isn't found, treat it as child of `root_iter`
-            let parent_iter = if found_info.is_some() {
-                &found_info.unwrap().iter
-            } else {
-                &root_iter
+            let parent_iter = match found_info {
+                Some(info) => &info.iter,
+                None => &root_iter,
             };
-
             // Custom Model
             let tree_model_struct = RootTreeModel::new();
             let item_type = if entry_path.is_dir() {
@@ -140,5 +136,11 @@ impl Workspace {
         }
 
         store
+    }
+}
+
+impl Default for Workspace {
+    fn default() -> Self {
+        Workspace::new()
     }
 }

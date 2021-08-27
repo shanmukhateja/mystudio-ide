@@ -45,8 +45,6 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                             .get::<String>()
                             .unwrap();
                         let file_path = Path::new(tree_item_abs_path);
-                        // FIXME: remove clone of `file_path`
-                        let file_path_clone = &file_path.clone();
 
                         let mut content = String::from("Invalid file or not supported.");
                         if file_path.is_file() {
@@ -54,8 +52,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                                 Ok(data) => {
                                     content = String::from_utf8(data).unwrap_or_default();
                                     // Update workspace's 'current open file' tracker
-                                    let open_file_path =
-                                        file_path_clone.as_os_str().to_str().unwrap();
+                                    let open_file_path = file_path.as_os_str().to_str().unwrap();
                                     Workspace::set_open_file_path(Some(String::from(
                                         open_file_path,
                                     )));
@@ -81,7 +78,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
 
                     match content {
                         Some(content) => {
-                            text_editor.buffer().unwrap().set_text(&content.as_str());
+                            text_editor.buffer().unwrap().set_text(content.as_str());
                             // Show cursor on text_view so user can start modifying file
                             text_editor.grab_focus();
                         }
@@ -99,8 +96,13 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     let text_buffer = text_editor.buffer().unwrap();
 
                     let file_absolute_path = Workspace::get_open_file_path();
-                    if file_absolute_path.is_some() {
-                        action_handler::save_file_changes(text_buffer, file_absolute_path.unwrap());
+                    match file_absolute_path {
+                        Some(file_abs_path) => {
+                            action_handler::save_file_changes(text_buffer, file_abs_path);
+                        }
+                        None => {
+                            println!("Unable to write Workspace#open_file_path");
+                        }
                     }
                 });
             }

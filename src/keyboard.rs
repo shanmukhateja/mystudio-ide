@@ -8,7 +8,6 @@ use crate::{
     G_WINDOW,
 };
 
-use gtk;
 use gtk::gdk;
 use gtk::glib::Sender;
 use gtk::prelude::{AccelGroupExtManual, GtkWindowExt};

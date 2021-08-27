@@ -6,7 +6,7 @@ use crate::workspace::Workspace;
 
 pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
     // FIXME: find better way than cloning `tx` for each closure
-    let tx_arc = tx.clone();
+    let tx_arc = tx;
     let tx_arc2 = tx_arc.clone();
 
     let grid_view = gtk::GridBuilder::new()
@@ -75,19 +75,16 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     chooser.add_button("Select Folder", gtk::ResponseType::Ok);
     chooser.add_button("Cancel", gtk::ResponseType::Cancel);
 
-    match chooser.run() {
-        gtk::ResponseType::Ok => {
-            let chosen_dir = chooser.file().unwrap();
-            let dir_path_buf = chosen_dir.path().unwrap();
-            let dir_path = dir_path_buf.to_str().unwrap();
+    if let gtk::ResponseType::Ok = chooser.run() {
+        let chosen_dir = chooser.file().unwrap();
+        let dir_path_buf = chosen_dir.path().unwrap();
+        let dir_path = dir_path_buf.to_str().unwrap();
 
-            // update global workspace path
-            Workspace::update_path(dir_path.to_string());
+        // update global workspace path
+        Workspace::update_path(dir_path.to_string());
 
-            // update UI
-            tx.send(CommEvents::UpdateRootTree()).ok();
-        }
-        _ => (),
+        // update UI
+        tx.send(CommEvents::UpdateRootTree()).ok();
     };
 
     chooser.hide();

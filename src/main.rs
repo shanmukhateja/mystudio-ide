@@ -37,7 +37,7 @@ fn build_ui(app: &gtk::Application) {
         let tx_clone2 = tx.clone();
 
         // Actions buttons menu
-        let actions_menu = ui::btn_action_row::build_actions_button(tx_clone.clone().clone());
+        let actions_menu = ui::btn_action_row::build_actions_button(tx_clone.clone());
         main_box.add(&actions_menu);
 
         let tree_editor_paned = gtk::PanedBuilder::new()
@@ -53,9 +53,9 @@ fn build_ui(app: &gtk::Application) {
 
             // Scroll Window (required to make Tree scrollable)
             let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
-            &scroll_window.add(&tree.borrow().clone().unwrap());
+            scroll_window.add(&tree.borrow().clone().unwrap());
 
-            tree_editor_paned.add(&scroll_window.clone());
+            tree_editor_paned.add(&scroll_window);
 
             // Text Editor
             G_TEXT_VIEW.with(|editor| {
@@ -63,9 +63,9 @@ fn build_ui(app: &gtk::Application) {
 
                 // Scroll Window (required to make Editor scrollable)
                 let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
-                &scroll_window.add(&editor.borrow().clone().unwrap());
+                scroll_window.add(&editor.borrow().clone().unwrap());
 
-                tree_editor_paned.add(&scroll_window.clone());
+                tree_editor_paned.add(&scroll_window);
 
                 main_box.add(&tree_editor_paned);
                 window.borrow().clone().unwrap().add(&main_box);
