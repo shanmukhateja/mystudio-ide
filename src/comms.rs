@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use gtk::glib::{self, Receiver, Sender};
-use gtk::prelude::{ObjectExt, TextBufferExt, TextViewExt, WidgetExt};
+use gtk::prelude::{ObjectExt, StatusbarExt, TextBufferExt, TextViewExt, WidgetExt};
 
 use crate::{
     action_handler,
@@ -9,7 +9,7 @@ use crate::{
     workspace::Workspace,
 };
 
-use crate::{G_TEXT_VIEW, G_TREE};
+use crate::{G_STATUS_BAR, G_TEXT_VIEW, G_TREE};
 
 // A 'global' way to trigger GUI events
 pub enum CommEvents {
@@ -100,7 +100,15 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     let file_absolute_path = Workspace::get_open_file_path();
                     match file_absolute_path {
                         Some(file_abs_path) => {
-                            action_handler::save_file_changes(text_buffer, file_abs_path);
+                            action_handler::save_file_changes(text_buffer, file_abs_path.clone());
+                            G_STATUS_BAR.with(|status_bar| {
+                                let status_bar_ref = status_bar.borrow();
+                                let status_bar =
+                                    status_bar_ref.as_ref().expect("Unable to use status_bar");
+
+                                status_bar
+                                    .push(0, &format!("Saved changes to '{}'", &file_abs_path));
+                            });
                         }
                         None => {
                             println!("Unable to write Workspace#open_file_path");

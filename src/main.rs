@@ -13,6 +13,7 @@ pub mod workspace;
 thread_local! { pub static G_WINDOW: RefCell<Option<gtk::ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<gtk::TreeView>> = RefCell::new(None) }
 thread_local! { pub static G_TEXT_VIEW: RefCell<Option<gtk::TextView>> = RefCell::new(None) }
+thread_local! { pub static G_STATUS_BAR: RefCell<Option<gtk::Statusbar>> = RefCell::new(None) }
 
 fn build_ui(app: &gtk::Application) {
     G_WINDOW.with(|window| {
@@ -43,6 +44,12 @@ fn build_ui(app: &gtk::Application) {
         G_TEXT_VIEW.with(|editor| {
             *editor.borrow_mut() = builder.object("main_text_editor");
             assert!(editor.borrow().is_some());
+        });
+
+        // Status bar
+        G_STATUS_BAR.with(|status_bar| {
+            *status_bar.borrow_mut() = builder.object("main_status_bar");
+            assert!(status_bar.borrow().is_some());
         });
 
         // Listen to UI changes
