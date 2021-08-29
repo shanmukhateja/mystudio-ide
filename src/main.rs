@@ -33,8 +33,7 @@ fn build_ui(app: &gtk::Application) {
 
         // Channels to communicate with UI widgets
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-        let tx_clone = tx.clone();
-        let tx_clone2 = tx.clone();
+        let tx_clone = &tx.clone();
 
         // Actions buttons menu
         let actions_menu = ui::btn_action_row::build_actions_button(tx_clone.clone());
@@ -49,7 +48,7 @@ fn build_ui(app: &gtk::Application) {
 
         // Tree
         G_TREE.with(|tree| {
-            *tree.borrow_mut() = Some(ui::tree_view::build_tree_view(tx_clone));
+            *tree.borrow_mut() = Some(ui::tree_view::build_tree_view(tx_clone.to_owned()));
 
             // Scroll Window (required to make Tree scrollable)
             let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
@@ -77,7 +76,7 @@ fn build_ui(app: &gtk::Application) {
             comms::handle_comm_event(tx, rx);
 
             // Keyboard events
-            crate::keyboard::listen_for_events(tx_clone2.clone());
+            crate::keyboard::listen_for_events(tx_clone.clone());
         });
     });
 }

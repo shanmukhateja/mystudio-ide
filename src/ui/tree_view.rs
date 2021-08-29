@@ -35,7 +35,7 @@ pub fn build_tree_view(tx: glib::Sender<CommEvents>) -> gtk::TreeView {
                         .ok();
                 }
             }
-            None => todo!(),
+            None => {},
         }
     });
 
