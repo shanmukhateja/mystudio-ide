@@ -1,61 +1,29 @@
+use gtk::Button;
 use gtk::glib;
 use gtk::prelude::*;
 
 use crate::comms::CommEvents;
 use crate::workspace::Workspace;
 
-pub fn build_actions_button(tx: glib::Sender<CommEvents>) -> gtk::Grid {
+pub fn setup_actions(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     // FIXME: find better way than cloning `tx` for each closure
     let tx_arc = tx;
     let tx_arc2 = tx_arc.clone();
+    
+    let open_dir_btn: Button = builder.object("button_open_workspace").expect("Unable to find button_open_workspace");
 
-    let grid_view = gtk::GridBuilder::new()
-        .hexpand(true)
-        .vexpand(false)
-        .margin_start(10)
-        .column_spacing(10)
-        .build();
-
-    // Open Dir button
-    let open_dir_image = gtk::ImageBuilder::new()
-        .icon_name("folder-open")
-        .icon_size(gtk::IconSize::LargeToolbar)
-        .build();
-    let open_dir_button = gtk::ButtonBuilder::new()
-        .image(&open_dir_image)
-        .always_show_image(true)
-        .tooltip_text("Open Workspace")
-        .focus_on_click(true)
-        .build();
-
-    open_dir_button.connect_button_release_event(move |_btn, _y| {
+    open_dir_btn.connect_button_release_event(move |_btn, _y| {
         on_open_dir_clicked(&tx_arc);
         gtk::Inhibit(true)
     });
 
-    grid_view.add(&open_dir_button);
+    let save_changes_btn: Button = builder.object("button_save_changes").expect("button_save_changes");
 
-    // Save changes button
-    let save_changes_icon = gtk::ImageBuilder::new()
-        .icon_name("media-floppy")
-        .icon_size(gtk::IconSize::LargeToolbar)
-        .build();
-    let save_changes_button = gtk::ButtonBuilder::new()
-        .image(&save_changes_icon)
-        .always_show_image(true)
-        .tooltip_text("Save Changes")
-        .focus_on_click(true)
-        .build();
-
-    save_changes_button.connect_button_release_event(move |_btn, _y| {
+    save_changes_btn.connect_button_release_event(move |_btn, _y| {
         on_save_changes_clicked(&tx_arc2);
         // Note: Fixes an issue where button has focus on hover after first use
         gtk::Inhibit(false)
     });
-
-    grid_view.add(&save_changes_button);
-
-    grid_view
 }
 
 pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {

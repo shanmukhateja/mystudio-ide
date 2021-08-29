@@ -16,68 +16,42 @@ thread_local! { pub static G_TEXT_VIEW: RefCell<Option<gtk::TextView>> = RefCell
 
 fn build_ui(app: &gtk::Application) {
     G_WINDOW.with(|window| {
-        *window.borrow_mut() = Some(
-            gtk::ApplicationWindowBuilder::new()
-                .title("MyStudio IDE")
-                .default_width(800)
-                .default_height(600)
-                .application(app)
-                .visible(true)
-                .build(),
-        );
+        // Load UI from glade file
+        let glade_src = include_str!("../res/ui/main_window.glade");
+        let builder: gtk::Builder = gtk::Builder::from_string(glade_src);
 
-        let main_box = gtk::BoxBuilder::new()
-            .orientation(gtk::Orientation::Vertical)
-            .margin(10)
-            .build();
+        // Get Window and set gtk::Application instance
+        *window.borrow_mut() = builder.object("main_window");
+        assert!(window.borrow().as_ref().is_some());
+        window.borrow().as_ref().unwrap().set_application(Some(app));
 
         // Channels to communicate with UI widgets
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
         let tx_clone = &tx.clone();
 
         // Actions buttons menu
-        let actions_menu = ui::btn_action_row::build_actions_button(tx_clone.clone());
-        main_box.add(&actions_menu);
-
-        let tree_editor_paned = gtk::PanedBuilder::new()
-            .orientation(gtk::Orientation::Horizontal)
-            .vexpand(true)
-            .position(200)
-            .border_width(10)
-            .build();
+        ui::btn_action_row::setup_actions(&builder, tx.clone());
 
         // Tree
         G_TREE.with(|tree| {
-            *tree.borrow_mut() = Some(ui::tree_view::build_tree_view(tx_clone.to_owned()));
-
-            // Scroll Window (required to make Tree scrollable)
-            let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
-            scroll_window.add(&tree.borrow().clone().unwrap());
-
-            tree_editor_paned.add(&scroll_window);
-
-            // Text Editor
-            G_TEXT_VIEW.with(|editor| {
-                *editor.borrow_mut() = Some(ui::text_view::build_text_view());
-
-                // Scroll Window (required to make Editor scrollable)
-                let scroll_window = gtk::ScrolledWindowBuilder::new().hexpand(false).build();
-                scroll_window.add(&editor.borrow().clone().unwrap());
-
-                tree_editor_paned.add(&scroll_window);
-
-                main_box.add(&tree_editor_paned);
-                window.borrow().clone().unwrap().add(&main_box);
-
-                window.borrow().clone().unwrap().show_all();
-            });
-
-            // Listen to UI changes
-            comms::handle_comm_event(tx, rx);
-
-            // Keyboard events
-            crate::keyboard::listen_for_events(tx_clone.clone());
+            *tree.borrow_mut() = builder.object("main_wexplorer_tree");
+            assert!(tree.borrow().is_some());
+            ui::tree_view::setup_tree(&builder, tx.clone());
         });
+
+        // Text Editor
+        G_TEXT_VIEW.with(|editor| {
+            *editor.borrow_mut() = builder.object("main_text_editor");
+            assert!(editor.borrow().is_some());
+        });
+
+        // Listen to UI changes
+        comms::handle_comm_event(tx, rx);
+
+        // Keyboard events
+        crate::keyboard::listen_for_events(tx_clone.clone());
+
+        window.borrow().clone().unwrap().show_all();
     });
 }
 

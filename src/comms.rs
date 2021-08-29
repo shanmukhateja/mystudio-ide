@@ -78,11 +78,13 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
 
                     match content {
                         Some(content) => {
+                            println!("setting text to editor {}", content);
                             text_editor.buffer().unwrap().set_text(content.as_str());
                             // Show cursor on text_view so user can start modifying file
                             text_editor.grab_focus();
                         }
                         None => {
+                            println!("resetting text editor");
                             // Reset text content
                             text_editor.buffer().unwrap().set_text("");
                         }
