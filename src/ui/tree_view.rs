@@ -26,7 +26,6 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
                         .unwrap()
                         .get::<TreeNodeType>()
                         .unwrap();
-                    println!("{:?}", item_type);
                     // Emit event if selected node is file
                     if item_type == TreeNodeType::File {
                         tx.send(CommEvents::RootTreeItemClicked(Some(selected_file)))
