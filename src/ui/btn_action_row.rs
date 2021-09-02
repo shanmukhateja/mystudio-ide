@@ -1,5 +1,7 @@
 use gtk::glib;
-use gtk::prelude::{BuilderExtManual, DialogExt, FileChooserExt, FileExt, WidgetExt};
+use gtk::prelude::{
+    BuilderExtManual, DialogExt, FileChooserExt, FileExt, WidgetExt,
+};
 use gtk::Button;
 
 use crate::comms::CommEvents;
@@ -28,6 +30,11 @@ pub fn setup_actions(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
         // Note: Fixes an issue where button has focus on hover after first use
         gtk::Inhibit(false)
     });
+
+    // FIXME: remove these and work it out in Glade
+    open_dir_btn.set_sensitive(true);
+    save_changes_btn.set_sensitive(true);
+
 }
 
 pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {

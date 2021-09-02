@@ -31,8 +31,20 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
   <!-- interface-license-type mit -->
   <!-- interface-name MyStudio IDE -->
   <!-- interface-description An IDE from scratch in Rust -->
-  <!-- interface-copyright 2021 -->
+  <!-- interface-copyright 2021 All Rights Reserved -->
   <!-- interface-authors Surya Teja K <shanmukhateja@gmail.com> -->
+  <object class="GtkImage" id="image_open_workspace">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">folder-open</property>
+    <property name="icon_size">2</property>
+  </object>
+  <object class="GtkImage" id="image_save_changes">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">media-floppy-3_5</property>
+    <property name="icon_size">2</property>
+  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">MyStudio IDE</property>
@@ -50,15 +62,17 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
           <object class="GtkGrid" id="actions_grid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-start">5</property>
             <property name="hexpand">True</property>
             <property name="column-spacing">10</property>
             <child>
               <object class="GtkButton" id="button_open_workspace">
-                <property name="label" translatable="yes">Open</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
-                <property name="action-name">app.open_workspace</property>
+                <property name="action-name">win.open_workspace</property>
+                <property name="image">image_open_workspace</property>
                 <property name="always-show-image">True</property>
               </object>
               <packing>
@@ -68,11 +82,12 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
             </child>
             <child>
               <object class="GtkButton" id="button_save_changes">
-                <property name="label" translatable="yes">Save</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="action-name">app.save_changes</property>
+                <property name="action-name">win.save_changes</property>
+                <property name="image">image_save_changes</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
