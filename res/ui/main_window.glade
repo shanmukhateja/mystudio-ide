@@ -33,18 +33,13 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
   <!-- interface-description An IDE from scratch in Rust -->
   <!-- interface-copyright 2021 -->
   <!-- interface-authors Surya Teja K <shanmukhateja@gmail.com> -->
-  <object class="GtkTreeStore" id="mexplorer_tree_model">
-    <columns>
-      <!-- column-name tree_name -->
-      <column type="GObject"/>
-    </columns>
-  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">MyStudio IDE</property>
     <property name="window-position">center</property>
     <property name="default-width">800</property>
     <property name="default-height">600</property>
+    <property name="show-menubar">False</property>
     <child>
       <object class="GtkBox" id="main_box">
         <property name="visible">True</property>
@@ -114,7 +109,6 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="vexpand">True</property>
-                    <property name="model">mexplorer_tree_model</property>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection"/>
                     </child>
