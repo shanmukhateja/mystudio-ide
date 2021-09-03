@@ -3,7 +3,9 @@ use gtk::{
     TreeIter, TreeStore,
 };
 use jwalk::WalkDir;
-use std::cell::RefCell;
+
+use std::path::Path;
+use std::{cell::RefCell, path::PathBuf};
 
 use crate::ui::tree_model::{RootTreeModel, TreeNodeType};
 
@@ -30,9 +32,21 @@ impl Workspace {
     }
 
     pub fn update_path(new_path: String) {
+        // Make sure dir exists
+        let path_buf = PathBuf::from(new_path);
+        let dir_path = path_buf.as_path();
+        assert!(Path::exists(dir_path));
+        // Resolve relative path
+        let canonical_path = String::from(
+            dir_path
+                .canonicalize()
+                .expect("Unable to resolve absolute path of workspace.")
+                .to_str()
+                .expect("Unable to convert workspace path to str"),
+        );
         WORKSPACE_PATH.with(|f| {
             *f.borrow_mut() = Workspace {
-                dir_path: new_path,
+                dir_path: canonical_path,
                 open_file: None,
             };
         });

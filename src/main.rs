@@ -2,6 +2,7 @@ use std::cell::RefCell;
 
 use gtk::glib;
 use gtk::prelude::*;
+use gtk::{self, gio::ApplicationFlags};
 
 mod action_handler;
 pub mod comms;
@@ -65,10 +66,26 @@ fn build_ui(app: &gtk::Application) {
 fn main() {
     let application = gtk::Application::new(
         Some("com.github.shanmukhateja.my-studio-ide"),
-        Default::default(),
+        ApplicationFlags::HANDLES_COMMAND_LINE,
     );
 
-    application.connect_activate(build_ui);
+    application.connect_command_line(|app, app_cmd| {
+        let arguments = app_cmd.arguments();
+        
+        arguments
+            .clone()
+            .into_iter()
+            .for_each(|arg| println!("arg: {}", arg.to_str().unwrap()));
+
+        if arguments.len() > 1 {
+            let workspace_path = arguments[1].to_str().unwrap();
+            workspace::Workspace::update_path(workspace_path.to_string());
+        }
+
+        build_ui(app);
+
+        0
+    });
 
     application.run();
 }
