@@ -14,30 +14,27 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
 
         tree.selection().connect_changed(move |selected_data| {
             let selected_data = selected_data.selected();
-            match selected_data {
-                Some((tree_model, tree_iter)) => {
-                    let selected_file = tree_model
-                        .value(&tree_iter, 0)
-                        .to_value()
-                        .get::<RootTreeModel>()
-                        .unwrap();
-                    let item_type = selected_file
-                        .property("item-type")
-                        .unwrap()
-                        .get::<TreeNodeType>()
-                        .unwrap();
-                    // Emit event if selected node is file
-                    if item_type == TreeNodeType::File {
-                        tx.send(CommEvents::RootTreeItemClicked(Some(selected_file)))
-                            .ok();
-                    }
+            if let Some((tree_model, tree_iter)) = selected_data {
+                let selected_file = tree_model
+                    .value(&tree_iter, 0)
+                    .to_value()
+                    .get::<RootTreeModel>()
+                    .unwrap();
+                let item_type = selected_file
+                    .property("item-type")
+                    .unwrap()
+                    .get::<TreeNodeType>()
+                    .unwrap();
+                // Emit event if selected node is file
+                if item_type == TreeNodeType::File {
+                    tx.send(CommEvents::RootTreeItemClicked(Some(selected_file)))
+                        .ok();
                 }
-                None => {}
             }
         });
 
         // Load tree data
-        update_tree_model(&tree);
+        update_tree_model(tree);
 
         // Tree column setup
         let column: gtk::TreeViewColumn = builder
