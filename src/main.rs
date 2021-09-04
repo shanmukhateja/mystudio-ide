@@ -71,11 +71,6 @@ fn main() {
 
     application.connect_command_line(|app, app_cmd| {
         let arguments = app_cmd.arguments();
-        
-        arguments
-            .clone()
-            .into_iter()
-            .for_each(|arg| println!("arg: {}", arg.to_str().unwrap()));
 
         if arguments.len() > 1 {
             let workspace_path = arguments[1].to_str().unwrap();
