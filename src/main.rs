@@ -1,8 +1,14 @@
 use std::cell::RefCell;
 
-use gtk::glib;
-use gtk::prelude::*;
-use gtk::{self, gio::ApplicationFlags};
+use gtk::{
+    gio::ApplicationFlags,
+    glib,
+    prelude::{
+        ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
+        GtkWindowExt, WidgetExt,
+    },
+    Application, ApplicationWindow, Builder, Statusbar, TextView, TreeView,
+};
 
 mod action_handler;
 pub mod comms;
@@ -10,19 +16,21 @@ mod keyboard;
 mod ui;
 pub mod workspace;
 
-// Declare GUI widgets in TLS for 'global' access
-thread_local! { pub static G_WINDOW: RefCell<Option<gtk::ApplicationWindow>> = RefCell::new(None) }
-thread_local! { pub static G_TREE: RefCell<Option<gtk::TreeView>> = RefCell::new(None) }
-thread_local! { pub static G_TEXT_VIEW: RefCell<Option<gtk::TextView>> = RefCell::new(None) }
-thread_local! { pub static G_STATUS_BAR: RefCell<Option<gtk::Statusbar>> = RefCell::new(None) }
+use workspace::Workspace;
 
-fn build_ui(app: &gtk::Application) {
+// Declare GUI widgets in TLS for 'global' access
+thread_local! { pub static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
+thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
+thread_local! { pub static G_TEXT_VIEW: RefCell<Option<TextView>> = RefCell::new(None) }
+thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
+
+fn build_ui(app: &Application) {
     G_WINDOW.with(|window| {
         // Load UI from glade file
         let glade_src = include_str!("../res/ui/main_window.glade");
-        let builder: gtk::Builder = gtk::Builder::from_string(glade_src);
+        let builder: Builder = Builder::from_string(glade_src);
 
-        // Get Window and set gtk::Application instance
+        // Get Window and set Application instance
         *window.borrow_mut() = builder.object("main_window");
         assert!(window.borrow().as_ref().is_some());
         window.borrow().as_ref().unwrap().set_application(Some(app));
@@ -64,7 +72,7 @@ fn build_ui(app: &gtk::Application) {
 }
 
 fn main() {
-    let application = gtk::Application::new(
+    let application = Application::new(
         Some("com.github.shanmukhateja.my-studio-ide"),
         ApplicationFlags::HANDLES_COMMAND_LINE,
     );
@@ -74,7 +82,7 @@ fn main() {
 
         if arguments.len() > 1 {
             let workspace_path = arguments[1].to_str().unwrap();
-            workspace::Workspace::update_path(workspace_path.to_string());
+            Workspace::update_path(workspace_path.to_string());
         }
 
         build_ui(app);
