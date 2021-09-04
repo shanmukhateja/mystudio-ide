@@ -36,12 +36,14 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
   <object class="GtkImage" id="image_open_workspace">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="pixel-size">20</property>
     <property name="icon-name">folder-open</property>
     <property name="icon_size">2</property>
   </object>
   <object class="GtkImage" id="image_save_changes">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
+    <property name="pixel-size">20</property>
     <property name="icon-name">media-floppy-3_5</property>
     <property name="icon_size">2</property>
   </object>
