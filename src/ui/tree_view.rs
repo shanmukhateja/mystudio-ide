@@ -103,7 +103,7 @@ fn build_tree_model() -> TreeStore {
 pub fn update_tree_model(tree: &gtk::TreeView) {
     tree.set_model(Some(&build_tree_model()));
     // Expand root node and select it
-    let root_node_path =gtk::TreePath::from_indicesv(&[0]); 
+    let root_node_path = gtk::TreePath::from_indicesv(&[0]);
     tree.expand_row(&root_node_path, false);
     tree.selection().select_path(&root_node_path);
 }
