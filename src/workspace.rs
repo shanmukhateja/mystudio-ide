@@ -1,3 +1,4 @@
+use arc_swap::ArcSwap;
 use gtk::{
     prelude::{ObjectExt, TreeStoreExtManual},
     TreeIter, TreeStore,
@@ -5,12 +6,15 @@ use gtk::{
 use jwalk::WalkDir;
 
 use std::path::Path;
-use std::{cell::RefCell, path::PathBuf};
+use std::{path::PathBuf, sync::Arc};
 
 use crate::ui::tree_model::{RootTreeModel, TreeNodeType};
 
+use static_init::dynamic;
+
 // Holds reference to Workspace
-thread_local!(static WORKSPACE_PATH: RefCell<Workspace> = RefCell::new(Workspace::new()));
+#[dynamic]
+static WORKSPACE_PATH: ArcSwap<Workspace> = ArcSwap::new(Arc::new(Workspace::new()));
 
 // FIXME: Move this to separate file
 struct TreeInfo {
@@ -44,30 +48,26 @@ impl Workspace {
                 .to_str()
                 .expect("Unable to convert workspace path to str"),
         );
-        WORKSPACE_PATH.with(|f| {
-            *f.borrow_mut() = Workspace {
-                dir_path: canonical_path,
-                open_file: None,
-            };
-        });
+        WORKSPACE_PATH.swap(Arc::new(Workspace {
+            dir_path: canonical_path,
+            open_file: None,
+        }));
     }
 
     pub fn get_path() -> String {
-        WORKSPACE_PATH.with(|f| f.borrow().dir_path.clone())
+        WORKSPACE_PATH.load().dir_path.clone()
     }
 
     pub fn get_open_file_path() -> Option<String> {
-        WORKSPACE_PATH.with(|f| f.borrow().open_file.clone())
+        WORKSPACE_PATH.load().open_file.clone()
     }
 
     pub fn set_open_file_path(new_file_path: Option<String>) {
-        WORKSPACE_PATH.with(move |f| {
-            let c_dir_path = f.borrow().dir_path.clone();
-            *f.borrow_mut() = Workspace {
-                open_file: new_file_path,
-                dir_path: c_dir_path,
-            };
-        });
+        let c_dir_path = WORKSPACE_PATH.load().dir_path.clone();
+        WORKSPACE_PATH.swap(Arc::new(Workspace {
+            open_file: new_file_path,
+            dir_path: c_dir_path,
+        }));
     }
 
     pub fn get_files_list(store: TreeStore) -> TreeStore {
