@@ -1,6 +1,13 @@
+use gtk::TreeIter;
+
 use std::cell::RefCell;
 
 use gtk::glib;
+pub struct TreeInfo {
+    pub value: String,
+    pub iter: TreeIter,
+}
+
 
 #[derive(Debug, Eq, PartialEq, Clone, Copy, glib::Enum)]
 #[repr(i32)]
@@ -114,7 +121,7 @@ mod imp {
             match pspec.name() {
                 "file-name" => self.file_name.borrow().to_value(),
                 "abs-path" => self.abs_path.borrow().to_value(),
-                "item-type" => self.item_type.get().unwrap().to_value(),
+                "item-type" => self.item_type.get().unwrap_or_default().to_value(),
                 e => {
                     println!("requested unknown property: '{}'", e);
                     e.to_value()

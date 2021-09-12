@@ -6,7 +6,7 @@ use gtk::traits::TextViewExt;
 
 use crate::{
     action_handler,
-    ui::{self, tree_model::RootTreeModel},
+    ui::{self, w_explorer::model::RootTreeModel},
     workspace::Workspace,
 };
 
@@ -31,7 +31,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
         match msg {
             CommEvents::UpdateRootTree() => {
                 G_TREE.with(|tree| {
-                    ui::tree_view::update_tree_model(&tree.borrow().clone().unwrap());
+                    ui::w_explorer::tree_view::update_tree_model(&tree.borrow().clone().unwrap());
                     // Reset UI
                     tx.send(CommEvents::RootTreeItemClicked(None)).ok();
                     tx.send(CommEvents::SpawnOrFocusTab(None, None)).ok();

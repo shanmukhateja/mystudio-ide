@@ -16,6 +16,8 @@ mod keyboard;
 mod ui;
 pub mod workspace;
 
+mod mys_fs;
+
 use workspace::Workspace;
 
 // Declare GUI widgets in TLS for 'global' access
@@ -47,7 +49,7 @@ fn build_ui(app: &Application) {
         G_TREE.with(|tree| {
             *tree.borrow_mut() = builder.object("main_wexplorer_tree");
             assert!(tree.borrow().is_some());
-            ui::tree_view::setup_tree(&builder, tx.clone());
+            ui::w_explorer::tree_view::setup_tree(&builder, tx.clone());
         });
 
         G_NOTEBOOK.with(|notebook| {
