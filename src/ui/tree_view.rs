@@ -21,8 +21,7 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
                     .get::<RootTreeModel>()
                     .unwrap();
                 let item_type = selected_file
-                    .property("item-type")
-                    .unwrap()
+                    .property_value("item-type")
                     .get::<TreeNodeType>()
                     .unwrap();
                 // Emit event if selected node is file
@@ -48,12 +47,12 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
             .object("cell_text")
             .expect("Unable to find cell_text");
 
-        gtk::prelude::TreeViewColumnExt::set_cell_data_func::<CellRendererText>(
+        gtk::prelude::TreeViewColumnExt::set_cell_data_func(
             &column,
             &cell_text,
             Some(Box::new(set_cell_data)),
         );
-        gtk::prelude::TreeViewColumnExt::set_cell_data_func::<CellRendererPixbuf>(
+        gtk::prelude::TreeViewColumnExt::set_cell_data_func(
             &column,
             &cell_icon,
             Some(Box::new(set_cell_data)),
@@ -74,15 +73,14 @@ fn set_cell_data(
 
     // Set the text
     if cell.is::<CellRendererText>() {
-        let file_name = tree_model.property("file-name").unwrap();
-        cell.set_property("text", file_name).ok();
+        let file_name = tree_model.property_value("file-name");
+        cell.set_property("text", file_name);
     }
 
     // Set icon
     if cell.is::<CellRendererPixbuf>() {
         let icon_type = tree_model
-            .property("item-type")
-            .unwrap()
+            .property_value("item-type")
             .get::<TreeNodeType>()
             .unwrap();
         let icon_name = match icon_type {
@@ -91,7 +89,7 @@ fn set_cell_data(
             TreeNodeType::File => "text-x-generic",
             TreeNodeType::Workspace => "folder-open",
         };
-        cell.set_property("icon-name", icon_name).ok();
+        cell.set_property("icon-name", icon_name);
     }
 }
 

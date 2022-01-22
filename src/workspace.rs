@@ -87,17 +87,14 @@ impl Workspace {
         // Custom Model
         let tree_model_struct = RootTreeModel::new();
         tree_model_struct
-            .set_property("file-name", &root_dir.file_name().to_str().unwrap())
-            .ok();
+            .set_property("file-name", &root_dir.file_name().to_str().unwrap());
         tree_model_struct
             .set_property(
                 "abs-path",
                 &root_dir.parent_path().as_os_str().to_str().unwrap(),
-            )
-            .ok();
+            );
         tree_model_struct
-            .set_property("item-type", &TreeNodeType::Workspace)
-            .ok();
+            .set_property("item-type", &TreeNodeType::Workspace);
 
         let root_iter = store.insert_with_values(None, Some(1_u32), &[(0_u32, &tree_model_struct)]);
 
@@ -131,13 +128,12 @@ impl Workspace {
             } else {
                 &TreeNodeType::File
             };
+            
             tree_model_struct
-                .set_property("file-name", &entry_file_str)
-                .ok();
+                .set_property("file-name", &entry_file_str);
             tree_model_struct
-                .set_property("abs-path", &entry_path_str)
-                .ok();
-            tree_model_struct.set_property("item-type", &item_type).ok();
+                .set_property("abs-path", &entry_path_str);
+            tree_model_struct.set_property("item-type", &item_type);//.ok();
 
             let m_iter =
                 store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);

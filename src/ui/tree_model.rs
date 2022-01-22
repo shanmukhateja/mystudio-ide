@@ -2,9 +2,9 @@ use std::cell::RefCell;
 
 use gtk::glib;
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy, glib::GEnum)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy, glib::Enum)]
 #[repr(i32)]
-#[genum(type_name = "TreeNodeType")]
+#[enum_type(name = "TreeNodeType")]
 pub enum TreeNodeType {
     Unknown = -1,
     Directory = 0,
@@ -50,21 +50,21 @@ mod imp {
             use glib::once_cell::sync::Lazy;
             static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
                 vec![
-                    glib::ParamSpec::new_string(
+                    glib::ParamSpecString::new(
                         "file-name",
                         "Name of File",
                         "File Name",
                         None,
                         glib::ParamFlags::READWRITE,
                     ),
-                    glib::ParamSpec::new_string(
+                    glib::ParamSpecString::new(
                         "abs-path",
                         "Absolute Path of file",
                         "abs-path",
                         None,
                         glib::ParamFlags::READWRITE,
                     ),
-                    glib::ParamSpec::new_enum(
+                    glib::ParamSpecEnum::new(
                         "item-type",
                         "Node item type",
                         "item-type",
