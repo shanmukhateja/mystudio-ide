@@ -39,11 +39,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                 match tree_model {
                     Some(tree_model) => {
                         // Concat workspace dir path with selection
-                        let tree_item_abs_path = &tree_model
-                            .property("abs-path")
-                            .unwrap()
-                            .get::<String>()
-                            .unwrap();
+                        let tree_item_abs_path = &tree_model.property::<String>("abs-path");
                         let file_path = Path::new(tree_item_abs_path);
 
                         let mut content = String::from("Invalid file or not supported.");

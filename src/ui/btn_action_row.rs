@@ -38,7 +38,7 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
-    let chooser = gtk::FileChooserDialogBuilder::new()
+    let chooser = gtk::FileChooserDialog::builder()
         .action(gtk::FileChooserAction::SelectFolder)
         .title("Open Folder")
         .default_width(600)
