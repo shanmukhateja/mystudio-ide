@@ -7,7 +7,7 @@ use gtk::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
         GtkWindowExt, WidgetExt,
     },
-    Application, ApplicationWindow, Builder, Statusbar, TextView, TreeView,
+    Application, ApplicationWindow, Builder, Statusbar, TreeView,
 };
 
 mod action_handler;
@@ -21,7 +21,7 @@ use workspace::Workspace;
 // Declare GUI widgets in TLS for 'global' access
 thread_local! { pub static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
-thread_local! { pub static G_TEXT_VIEW: RefCell<Option<TextView>> = RefCell::new(None) }
+thread_local! { pub static G_TEXT_VIEW: RefCell<Option<sourceview4::View>> = RefCell::new(None) }
 thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
 
 fn build_ui(app: &Application) {
