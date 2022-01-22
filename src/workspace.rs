@@ -100,7 +100,7 @@ impl Workspace {
 
         // Store TreePath of a TreeIter
         let mut tree_info = vec![TreeInfo {
-            iter: root_iter.clone(),
+            iter: root_iter,
             value: String::from(root_dir.file_name().to_str().unwrap()),
         }];
 
@@ -133,7 +133,7 @@ impl Workspace {
                 .set_property("file-name", &entry_file_str);
             tree_model_struct
                 .set_property("abs-path", &entry_path_str);
-            tree_model_struct.set_property("item-type", &item_type);//.ok();
+            tree_model_struct.set_property("item-type", &item_type);
 
             let m_iter =
                 store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
