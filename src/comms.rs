@@ -42,11 +42,11 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                         let tree_item_abs_path = &tree_model.property::<String>("abs-path");
                         let file_path = Path::new(tree_item_abs_path);
 
-                        let mut content = String::from("Invalid file or not supported.");
+                        let mut content = String::from("The selected item is not a file.");
                         if file_path.is_file() {
                             match std::fs::read(file_path) {
                                 Ok(data) => {
-                                    content = String::from_utf8(data).unwrap_or_default();
+                                    content = String::from_utf8(data).unwrap_or_else(|_| "File not supported".to_string());
                                     // Update workspace's 'current open file' tracker
                                     let open_file_path = file_path.as_os_str().to_str().unwrap();
                                     Workspace::set_open_file_path(Some(String::from(
