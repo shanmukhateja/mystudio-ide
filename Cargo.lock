@@ -517,6 +517,7 @@ dependencies = [
  "arc-swap",
  "gtk",
  "jwalk",
+ "sourceview4",
  "static_init",
 ]
 
@@ -749,6 +750,43 @@ name = "smallvec"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
+
+[[package]]
+name = "sourceview4"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93b6d77ea4d6ae2edfd0eef76b597b779faa082865812a34357db8a239614ea7"
+dependencies = [
+ "bitflags",
+ "cairo-rs",
+ "gdk",
+ "gdk-pixbuf",
+ "gio",
+ "glib",
+ "gtk",
+ "libc",
+ "pango",
+ "sourceview4-sys",
+]
+
+[[package]]
+name = "sourceview4-sys"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52112e8dbba7d4aa28106c289ddb398ede3bc3bcd91f185368ca5e2e542eea30"
+dependencies = [
+ "cairo-sys-rs",
+ "gdk-pixbuf-sys",
+ "gdk-sys",
+ "gio-sys",
+ "glib-sys",
+ "gobject-sys",
+ "gtk-sys",
+ "libc",
+ "pango-sys",
+ "pkg-config",
+ "system-deps",
+]
 
 [[package]]
 name = "static_init"

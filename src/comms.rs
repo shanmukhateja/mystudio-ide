@@ -2,12 +2,14 @@ use std::path::Path;
 
 use gtk::glib::{self, Receiver, Sender};
 use gtk::prelude::{ObjectExt, StatusbarExt, TextBufferExt, TextViewExt, WidgetExt};
+use sourceview4::LanguageManager;
 
 use crate::{
     action_handler,
     ui::{self, tree_model::RootTreeModel},
     workspace::Workspace,
 };
+use sourceview4::prelude::*;
 
 use crate::{G_STATUS_BAR, G_TEXT_VIEW, G_TREE};
 
@@ -19,7 +21,7 @@ pub enum CommEvents {
     // used to read text files
     RootTreeItemClicked(Option<RootTreeModel>),
     // Sets text to RootTextView
-    UpdateRootTextViewContent(Option<String>),
+    UpdateRootTextViewContent(Option<String>, Option<String>),
     // Save Changes
     SaveEditorChanges(),
 }
@@ -32,7 +34,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     ui::tree_view::update_tree_model(&tree.borrow().clone().unwrap());
                     // Reset UI
                     tx.send(CommEvents::RootTreeItemClicked(None)).ok();
-                    tx.send(CommEvents::UpdateRootTextViewContent(None)).ok();
+                    tx.send(CommEvents::UpdateRootTextViewContent(None, None)).ok();
                 });
             }
             CommEvents::RootTreeItemClicked(tree_model) => {
@@ -59,7 +61,8 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                             }
                         }
 
-                        tx.send(CommEvents::UpdateRootTextViewContent(Some(content)))
+                        let file_path_string: String = String::from(file_path.to_str().unwrap());
+                        tx.send(CommEvents::UpdateRootTextViewContent(Some(file_path_string), Some(content)))
                             .ok();
                     }
                     None => {
@@ -68,13 +71,28 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     }
                 }
             }
-            CommEvents::UpdateRootTextViewContent(content) => {
+            CommEvents::UpdateRootTextViewContent(path, content) => {
                 G_TEXT_VIEW.with(|editor| {
                     let text_editor = &editor.borrow().clone().unwrap();
 
                     match content {
                         Some(content) => {
-                            text_editor.buffer().unwrap().set_text(content.as_str());
+                            let source_buffer = sourceview4::Buffer::builder()
+                            .text(content.as_str())
+                            .build();
+
+                            // Detect language for syntax highlight
+                            let lang_manager = LanguageManager::new();
+                            match lang_manager.guess_language(Some(path.unwrap()), None) {
+                                Some(lang) => {
+                                    source_buffer.set_language(Some(&lang));
+                                },
+                                None => {
+                                    source_buffer.set_language(sourceview4::Language::NONE);
+                                }
+                            }
+                            // update buffer in View
+                            text_editor.set_buffer(Some(&source_buffer));
                             // Show cursor on text_view so user can start modifying file
                             text_editor.grab_focus();
                         }
