@@ -1,15 +1,13 @@
 use std::path::Path;
 
 use gtk::glib::{self, Receiver, Sender};
-use gtk::prelude::{ObjectExt, StatusbarExt, TextBufferExt, TextViewExt, WidgetExt};
-use sourceview4::LanguageManager;
+use gtk::prelude::{ObjectExt, StatusbarExt, TextViewExt};
 
 use crate::{
     action_handler,
     ui::{self, tree_model::RootTreeModel},
     workspace::Workspace,
 };
-use sourceview4::prelude::*;
 
 use crate::{G_STATUS_BAR, G_TEXT_VIEW, G_TREE};
 
@@ -17,7 +15,8 @@ use crate::{G_STATUS_BAR, G_TEXT_VIEW, G_TREE};
 pub enum CommEvents {
     // Triggers TreeView#set_model
     UpdateRootTree(),
-
+    // Spawn/Focus Notebook Tab,
+    SpawnOrFocusTab(Option<String>, Option<String>),
     // used to read text files
     RootTreeItemClicked(Option<RootTreeModel>),
     // Sets text to RootTextView
@@ -34,8 +33,13 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     ui::tree_view::update_tree_model(&tree.borrow().clone().unwrap());
                     // Reset UI
                     tx.send(CommEvents::RootTreeItemClicked(None)).ok();
-                    tx.send(CommEvents::UpdateRootTextViewContent(None, None)).ok();
+                    tx.send(CommEvents::SpawnOrFocusTab(None, None)).ok();
+                    tx.send(CommEvents::UpdateRootTextViewContent(None, None))
+                        .ok();
                 });
+            }
+            CommEvents::SpawnOrFocusTab(file_path, content) => {
+                ui::notebook::handle_notebook_event(content, file_path);
             }
             CommEvents::RootTreeItemClicked(tree_model) => {
                 match tree_model {
@@ -48,7 +52,8 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                         if file_path.is_file() {
                             match std::fs::read(file_path) {
                                 Ok(data) => {
-                                    content = String::from_utf8(data).unwrap_or_else(|_| "File not supported".to_string());
+                                    content = String::from_utf8(data)
+                                        .unwrap_or_else(|_| "File not supported".to_string());
                                     // Update workspace's 'current open file' tracker
                                     let open_file_path = file_path.as_os_str().to_str().unwrap();
                                     Workspace::set_open_file_path(Some(String::from(
@@ -61,9 +66,13 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                             }
                         }
 
-                        let file_path_string: String = String::from(file_path.to_str().unwrap());
-                        tx.send(CommEvents::UpdateRootTextViewContent(Some(file_path_string), Some(content)))
-                            .ok();
+                        let file_path_string = String::from(file_path.to_str().unwrap());
+
+                        tx.send(CommEvents::SpawnOrFocusTab(
+                            Some(file_path_string),
+                            Some(content),
+                        ))
+                        .ok();
                     }
                     None => {
                         // Reset workspace's 'current open file' tracker
@@ -74,33 +83,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
             CommEvents::UpdateRootTextViewContent(path, content) => {
                 G_TEXT_VIEW.with(|editor| {
                     let text_editor = &editor.borrow().clone().unwrap();
-
-                    match content {
-                        Some(content) => {
-                            let source_buffer = sourceview4::Buffer::builder()
-                            .text(content.as_str())
-                            .build();
-
-                            // Detect language for syntax highlight
-                            let lang_manager = LanguageManager::new();
-                            match lang_manager.guess_language(Some(path.unwrap()), None) {
-                                Some(lang) => {
-                                    source_buffer.set_language(Some(&lang));
-                                },
-                                None => {
-                                    source_buffer.set_language(sourceview4::Language::NONE);
-                                }
-                            }
-                            // update buffer in View
-                            text_editor.set_buffer(Some(&source_buffer));
-                            // Show cursor on text_view so user can start modifying file
-                            text_editor.grab_focus();
-                        }
-                        None => {
-                            // Reset text content
-                            text_editor.buffer().unwrap().set_text("");
-                        }
-                    }
+                    ui::utils::set_text_on_editor(text_editor, path, content);
                 });
             }
             CommEvents::SaveEditorChanges() => {
