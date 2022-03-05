@@ -1,12 +1,20 @@
+use std::{cell::RefCell, path::Path};
 use gtk::{
     glib,
     prelude::{Cast, NotebookExtManual},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
     IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
-use std::path::Path;
-
 use crate::{ui, G_NOTEBOOK};
+
+#[derive(Debug)]
+pub struct NotebookTabItem {
+    file_path: String,
+    position: u32,
+}
+
+// Holds reference to NotebookTabCache
+thread_local! {pub static NOTEBOOK_TABS_CACHE: RefCell<Option<Vec<NotebookTabItem>>> = RefCell::new(Some(Vec::new()))}
 
 pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
     G_NOTEBOOK.with(move |notebook| {
@@ -21,6 +29,26 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
         }
 
         let file_path_str = file_path.unwrap();
+
+        //  Check if tab is already created for the file and focus it instead
+
+        let mut has_focussed_page = false;
+        NOTEBOOK_TABS_CACHE.with(|cache| {
+            let cache = cache.borrow();
+            let entries = cache.as_ref().unwrap();
+            for iter in entries {
+                if iter.file_path.trim().eq(file_path_str.trim()) {
+                    notebook.set_current_page(Some(iter.position));
+                    has_focussed_page = true;
+                    break;
+                }
+            }
+        });
+        if has_focussed_page {
+            return;
+        };
+        
+        //  Create New Tab
         let file_name = String::from(
             Path::new(&file_path_str)
                 .file_name()
@@ -31,10 +59,14 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
         // Add content to child of tab
         let editor = sourceview4::View::new();
-        ui::utils::set_text_on_editor(&editor, Some(file_path_str), content);
+        ui::utils::set_text_on_editor(&editor, Some(file_path_str.clone()), content);
 
         // create new tab
-        create_tab(notebook, file_name.as_str(), editor.upcast());
+        let tab_position = create_tab(notebook, file_name.as_str(), editor.upcast());
+        NOTEBOOK_TABS_CACHE.with(|cache| {
+            let mut cache = cache.to_owned().borrow_mut();
+            cache.as_mut().unwrap().push(NotebookTabItem { file_path: file_path_str.clone(), position: tab_position });
+        });
     });
 }
 
