@@ -101,3 +101,30 @@ pub fn create_tab(notebook: Notebook, title: &str, widget: Widget) -> u32 {
 
     index
 }
+
+pub fn get_current_page_editor(file_path: String) -> Option<sourceview4::View> {
+
+
+    let position = NOTEBOOK_TABS_CACHE.with(|cache| {
+        let cache = cache.borrow();
+        let cache = cache.as_ref().unwrap();
+
+        let mut result = -1;
+        for iter in cache {
+            if iter.file_path == file_path {
+                result = iter.position as i32; 
+                break;
+            }
+        }
+
+        result as u32
+    });
+    
+    G_NOTEBOOK.with(|notebook| {
+        let notebook = notebook.borrow();
+        let notebook = notebook.as_ref().unwrap();
+
+        let page = notebook.nth_page(Some(position));
+        page.map(|page| page.downcast::<sourceview4::View>().unwrap())
+    })
+}
