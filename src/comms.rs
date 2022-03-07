@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use gtk::glib::{self, Receiver, Sender};
-use gtk::prelude::{ObjectExt, StatusbarExt};
+use gtk::prelude::ObjectExt;
 use gtk::traits::TextViewExt;
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
     workspace::Workspace,
 };
 
-use crate::{G_STATUS_BAR, G_TEXT_VIEW, G_TREE};
+use crate::{G_TEXT_VIEW, G_TREE};
 
 // A 'global' way to trigger GUI events
 pub enum CommEvents {
@@ -94,19 +94,20 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                         // Get View widget of open file
                         let text_editor =
                             ui::notebook::get_current_page_editor(file_abs_path.clone());
-                        let text_buffer = text_editor.expect("Unable to find editor for open file").buffer().unwrap();
+                        let text_buffer = text_editor
+                            .expect("Unable to find editor for open file")
+                            .buffer()
+                            .unwrap();
 
                         action_handler::save_file_changes(text_buffer, file_abs_path.clone());
-                        G_STATUS_BAR.with(|status_bar| {
-                            let status_bar_ref = status_bar.borrow();
-                            let status_bar =
-                                status_bar_ref.as_ref().expect("Unable to use status_bar");
 
-                            status_bar.push(0, &format!("Saved changes to '{}'", &file_abs_path));
-                        });
+                        // Show message in Status bar
+                        ui::statusbar::show_status_message(
+                            format!("Saved changes to '{}'", &file_abs_path)
+                        );
                     }
                     None => {
-                        println!("Unable to write Workspace#open_file_path");
+                        eprintln!("Unable to write Workspace#open_file_path");
                     }
                 }
             }
