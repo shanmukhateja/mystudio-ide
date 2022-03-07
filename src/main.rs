@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, path::Path};
 
 use gtk::{
     gio::ApplicationFlags,
@@ -92,8 +92,15 @@ fn main() {
         let arguments = app_cmd.arguments();
 
         if arguments.len() > 1 {
-            let workspace_path = arguments[1].to_str().unwrap();
-            Workspace::update_path(workspace_path.to_string());
+            let workspace_dir_str = arguments[1].to_str().unwrap();
+
+            // We (currently) only support directories as CLI argument
+            let workspace_path = Path::new(workspace_dir_str);
+            if !workspace_path.is_dir() {
+                panic!("Expected argument to be valid directory, aborting.");
+            }
+
+            Workspace::update_path(workspace_dir_str.to_string());
         }
 
         build_ui(app);
