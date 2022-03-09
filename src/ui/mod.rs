@@ -1,4 +1,4 @@
-pub mod btn_action_row;
+pub mod action_row;
 pub mod notebook;
 pub mod statusbar;
 pub mod utils;

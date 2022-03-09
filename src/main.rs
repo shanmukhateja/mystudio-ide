@@ -10,7 +10,6 @@ use gtk::{
     Application, ApplicationWindow, Builder, Statusbar, TreeView, Notebook
 };
 
-mod action_handler;
 pub mod comms;
 mod keyboard;
 mod ui;
@@ -43,7 +42,7 @@ fn build_ui(app: &Application) {
         let tx_clone = &tx.clone();
 
         // Actions buttons menu
-        ui::btn_action_row::setup_actions(&builder, tx.clone());
+        ui::action_row::ui::setup_actions(&builder, tx.clone());
 
         // Tree
         G_TREE.with(|tree| {

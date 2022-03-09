@@ -5,7 +5,6 @@ use gtk::prelude::ObjectExt;
 use gtk::traits::TextViewExt;
 
 use crate::{
-    action_handler,
     ui::{self, w_explorer::model::RootTreeModel},
     workspace::Workspace,
 };
@@ -99,7 +98,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                             .buffer()
                             .unwrap();
 
-                        action_handler::save_file_changes(text_buffer, file_abs_path.clone());
+                            ui::action_row::handler::save_file_changes(text_buffer, file_abs_path.clone());
 
                         // Show message in Status bar
                         ui::statusbar::show_status_message(

@@ -2,9 +2,9 @@
 
 use std::cell::RefCell;
 
-use crate::comms::CommEvents;
 use crate::{
-    ui::btn_action_row::{on_open_dir_clicked, on_save_changes_clicked},
+    comms::CommEvents,
+    ui::action_row::ui::{on_open_dir_clicked, on_save_changes_clicked},
     G_WINDOW,
 };
 
