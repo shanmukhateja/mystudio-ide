@@ -2,10 +2,10 @@ use gtk::{
     glib,
     prelude::{
         BuilderExtManual, ObjectExt, StaticType, ToValue, TreeModelExt, TreeSelectionExt,
-        TreeStoreExtManual, TreeViewExt,
+        TreeStoreExtManual, TreeViewExt
     },
     CellRenderer, CellRendererPixbuf, CellRendererText, TreeIter, TreeModel, TreeStore,
-    TreeViewColumn,
+    TreeViewColumn
 };
 
 use crate::{
@@ -14,6 +14,15 @@ use crate::{
 };
 
 use super::model::{TreeInfo, TreeNodeType};
+
+fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
+    if icon_type == TreeNodeType::Directory {
+        return "folder".to_owned();
+    }
+
+    let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
+    guess.as_str().to_owned()
+}
 
 pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     G_TREE.with(|tree| {
@@ -80,9 +89,9 @@ fn set_cell_data(
         .unwrap();
 
     // Set the text
+    let filename = tree_model.property_value("file-name");
     if cell.is::<CellRendererText>() {
-        let file_name = tree_model.property_value("file-name");
-        cell.set_property("text", file_name);
+        cell.set_property("text", filename.clone());
     }
 
     // Set icon
@@ -91,10 +100,14 @@ fn set_cell_data(
             .property_value("item-type")
             .get::<TreeNodeType>()
             .unwrap();
-        let icon_name = match icon_type {
+        
+        let filename = filename.get().unwrap();
+        let filetype = get_icon_for_name(filename, icon_type);
+        
+        let icon_name =  match icon_type {
             TreeNodeType::Unknown => "dialog-warning",
-            TreeNodeType::Directory => "folder",
-            TreeNodeType::File => "text-x-generic",
+            TreeNodeType::Directory => filetype.as_str(),
+            TreeNodeType::File => filetype.as_str(),
             TreeNodeType::Workspace => "folder-open",
         };
         cell.set_property("icon-name", icon_name);

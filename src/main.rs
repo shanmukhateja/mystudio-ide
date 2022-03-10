@@ -5,9 +5,9 @@ use gtk::{
     glib,
     prelude::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
-        GtkWindowExt, WidgetExt, NotebookExtManual,
+        GtkWindowExt, NotebookExtManual, ObjectExt, WidgetExt,
     },
-    Application, ApplicationWindow, Builder, Statusbar, TreeView, Notebook
+    Application, ApplicationWindow, Builder, Notebook, Statusbar, TreeView,
 };
 
 pub mod comms;
@@ -55,7 +55,7 @@ fn build_ui(app: &Application) {
             *notebook.borrow_mut() = builder.object("editor_notebook");
             let notebook = notebook.borrow().clone();
             assert!(notebook.is_some());
-            
+
             let notebook = notebook.unwrap();
             // Remove placeholder
             notebook.remove_page(Some(0));
@@ -83,6 +83,23 @@ fn build_ui(app: &Application) {
     });
 }
 
+fn configure_icon_theme() {
+    let icon_themes = ["adwaita", "default"];
+    let app_settings = gtk::Settings::default();
+
+    for theme_name in icon_themes.iter() {
+        let result = app_settings
+            .clone()
+            .unwrap()
+            .try_set_property("gtk-icon-theme-name", theme_name);
+        if result.is_err() {
+            eprintln!("Setting GTK icon theme to {} failed", theme_name);
+        } else {
+            break;
+        }
+    }
+}
+
 fn main() {
     let application = Application::new(
         Some("com.github.shanmukhateja.my-studio-ide"),
@@ -103,6 +120,8 @@ fn main() {
 
             Workspace::update_path(workspace_dir_str.to_string());
         }
+
+        configure_icon_theme();
 
         build_ui(app);
 

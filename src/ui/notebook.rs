@@ -1,10 +1,12 @@
 use std::{cell::RefCell, path::Path};
 use gtk::{
     glib,
-    prelude::{Cast, NotebookExtManual},
+    prelude::{Cast, NotebookExtManual, CssProviderExt},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
     IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
+use sourceview4::prelude::*;
+
 use crate::{ui, G_NOTEBOOK};
 
 #[derive(Debug)]
@@ -15,6 +17,19 @@ pub struct NotebookTabItem {
 
 // Holds reference to NotebookTabCache
 thread_local! {pub static NOTEBOOK_TABS_CACHE: RefCell<Option<Vec<NotebookTabItem>>> = RefCell::new(Some(Vec::new()))}
+
+fn set_view_defaut_options( view: &sourceview4::View) {
+    view.set_show_line_marks(true);
+    view.set_show_line_numbers(true);
+    view.set_auto_indent(true);
+    view.set_highlight_current_line(true);
+
+    let css_provider = gtk::CssProvider::new();
+    css_provider.load_from_data("textview { font-family: Monospace }".as_bytes()).ok();
+
+    let screen = gtk::gdk::Screen::default().expect("Unable to find screen for css_provider");
+    gtk::StyleContext::add_provider_for_screen(&screen, &css_provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+}
 
 pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
     G_NOTEBOOK.with(move |notebook| {
@@ -40,6 +55,7 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
                 if iter.file_path.trim().eq(file_path_str.trim()) {
                     notebook.set_current_page(Some(iter.position));
                     has_focussed_page = true;
+                    // FIXME: page should scroll to top when new tab is opened
                     break;
                 }
             }
@@ -59,6 +75,7 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
         // Add content to child of tab
         let editor = sourceview4::View::new();
+        set_view_defaut_options(&editor);
         ui::utils::set_text_on_editor(&editor, Some(file_path_str.clone()), content);
 
         // create new tab
