@@ -125,24 +125,62 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
                 <property name="shadow-type">in</property>
                 <property name="min-content-width">250</property>
                 <child>
-                  <object class="GtkTreeView" id="main_wexplorer_tree">
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="vexpand">True</property>
-                    <child internal-child="selection">
-                      <object class="GtkTreeSelection"/>
-                    </child>
+                    <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkTreeViewColumn" id="wexplorer_tree_column">
-                        <property name="sizing">autosize</property>
-                        <property name="min-width">250</property>
-                        <property name="title" translatable="yes">WORKSPACE EXPLORER</property>
-                        <property name="alignment">0.5</property>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkCellRendererPixbuf" id="cell_icon"/>
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="ypad">6</property>
+                            <property name="label" translatable="yes">Workspace Explorer</property>
+                            <property name="xalign">0.10000000149011612</property>
+                            <attributes>
+                              <attribute name="weight" value="medium"/>
+                              <attribute name="variant" value="small-caps"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
                         </child>
                         <child>
-                          <object class="GtkCellRendererText" id="cell_text"/>
+                          <object class="GtkTreeView" id="main_wexplorer_tree">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="vexpand">True</property>
+                            <property name="headers-visible">False</property>
+                            <property name="enable-search">False</property>
+                            <property name="enable-tree-lines">True</property>
+                            <child internal-child="selection">
+                              <object class="GtkTreeSelection"/>
+                            </child>
+                            <child>
+                              <object class="GtkTreeViewColumn" id="wexplorer_tree_column">
+                                <property name="sizing">autosize</property>
+                                <property name="min-width">250</property>
+                                <property name="alignment">0.5</property>
+                                <child>
+                                  <object class="GtkCellRendererPixbuf" id="cell_icon"/>
+                                </child>
+                                <child>
+                                  <object class="GtkCellRendererText" id="cell_text"/>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                       </object>
                     </child>
