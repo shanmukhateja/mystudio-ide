@@ -1,11 +1,11 @@
-use std::{cell::RefCell, path::Path};
 use gtk::{
     glib,
-    prelude::{Cast, NotebookExtManual, CssProviderExt},
+    prelude::{Cast, CssProviderExt, NotebookExtManual},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
     IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
 use sourceview4::prelude::*;
+use std::{cell::RefCell, path::Path};
 
 use crate::{ui, G_NOTEBOOK};
 
@@ -18,19 +18,26 @@ pub struct NotebookTabItem {
 // Holds reference to NotebookTabCache
 thread_local! {pub static NOTEBOOK_TABS_CACHE: RefCell<Option<Vec<NotebookTabItem>>> = RefCell::new(Some(Vec::new()))}
 
-fn set_view_defaut_options( view: &sourceview4::View) {
+fn set_view_defaut_options(view: &sourceview4::View) {
     view.set_show_line_marks(true);
     view.set_show_line_numbers(true);
     view.set_auto_indent(true);
     view.set_highlight_current_line(true);
 
     let css_provider = gtk::CssProvider::new();
-    css_provider.load_from_data("textview { font-family: Monospace }".as_bytes()).ok();
+    css_provider
+        .load_from_data("textview { font-family: Monospace }".as_bytes())
+        .ok();
 
     let screen = gtk::gdk::Screen::default().expect("Unable to find screen for css_provider");
-    gtk::StyleContext::add_provider_for_screen(&screen, &css_provider, gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk::StyleContext::add_provider_for_screen(
+        &screen,
+        &css_provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 }
 
+#[allow(clippy::unnecessary_unwrap)]
 pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
     G_NOTEBOOK.with(move |notebook| {
         let notebook: Notebook = notebook.borrow().clone().unwrap();
@@ -47,23 +54,25 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
         //  Check if tab is already created for the file and focus it instead
 
-        let mut has_focussed_page = false;
-        NOTEBOOK_TABS_CACHE.with(|cache| {
+        let has_focussed_page = NOTEBOOK_TABS_CACHE.with(|cache| {
             let cache = cache.borrow();
             let entries = cache.as_ref().unwrap();
-            for iter in entries {
-                if iter.file_path.trim().eq(file_path_str.trim()) {
-                    notebook.set_current_page(Some(iter.position));
-                    has_focussed_page = true;
-                    // FIXME: page should scroll to top when new tab is opened
-                    break;
-                }
+            let iter = entries
+                .iter()
+                .find(|iter| iter.file_path.trim().eq(file_path_str.trim()));
+            if iter.is_some() {
+                let iter = iter.unwrap();
+                notebook.set_current_page(Some(iter.position));
+                // FIXME: page should scroll to top when new tab is opened
             }
+
+            iter.is_some()
         });
+
         if has_focussed_page {
             return;
-        };
-        
+        }
+
         //  Create New Tab
         let file_name = String::from(
             Path::new(&file_path_str)
@@ -82,7 +91,10 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
         let tab_position = create_tab(notebook, file_name.as_str(), editor.upcast());
         NOTEBOOK_TABS_CACHE.with(|cache| {
             let mut cache = cache.to_owned().borrow_mut();
-            cache.as_mut().unwrap().push(NotebookTabItem { file_path: file_path_str.clone(), position: tab_position });
+            cache.as_mut().unwrap().push(NotebookTabItem {
+                file_path: file_path_str.clone(),
+                position: tab_position
+            });
         });
     });
 }
@@ -126,24 +138,22 @@ pub fn create_tab(notebook: Notebook, title: &str, widget: Widget) -> u32 {
     index
 }
 
+#[allow(clippy::unnecessary_unwrap)]
 pub fn get_current_page_editor(file_path: String) -> Option<sourceview4::View> {
-
-
     let position = NOTEBOOK_TABS_CACHE.with(|cache| {
         let cache = cache.borrow();
         let cache = cache.as_ref().unwrap();
 
-        let mut result = -1;
-        for iter in cache {
-            if iter.file_path == file_path {
-                result = iter.position as i32; 
-                break;
-            }
+        let mut result = u32::MAX;
+        let iter = cache.iter().find(|i| i.file_path == file_path);
+
+        if iter.is_some() {
+            result = iter.unwrap().position;
         }
 
         result as u32
     });
-    
+
     G_NOTEBOOK.with(|notebook| {
         let notebook = notebook.borrow();
         let notebook = notebook.as_ref().unwrap();
