@@ -108,6 +108,13 @@ pub fn create_tab(notebook: Notebook, title: &str, widget: Widget) -> u32 {
             .page_num(&widget)
             .expect("Couldn't get page_num from notebook");
         notebook.remove_page(Some(index));
+
+        // Also remove from cache
+        NOTEBOOK_TABS_CACHE.with(|cache| {
+            let mut cache = cache.borrow_mut();
+            let entries = cache.as_mut().unwrap();
+            entries.swap_remove(index as usize);
+        });
     }));
 
     // Show Notebook widget (GTK+ widgets hide themselves by default)
