@@ -4,6 +4,7 @@ use static_init::dynamic;
 pub struct NotebookTabCache {
     pub file_path: String,
     pub position: u32,
+    pub icon_name: String,
 }
 
 impl Clone for NotebookTabCache {
@@ -11,6 +12,7 @@ impl Clone for NotebookTabCache {
         Self {
             file_path: self.file_path.clone(),
             position: self.position,
+            icon_name: self.icon_name.clone(),
         }
     }
 }

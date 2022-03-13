@@ -2,6 +2,8 @@ use std::{ops::ControlFlow, path::Path};
 
 use gtk::prelude::{Cast, NotebookExtManual};
 
+use crate::ui::w_explorer::model::TreeNodeType;
+
 use super::{
     cache::{self as notebook_cache, NotebookTabCache},
     editor::{set_editor_defaut_options, set_text_on_editor},
@@ -37,7 +39,9 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
     set_text_on_editor(&editor, Some(file_path.clone()), content);
 
     // create new tab
-    let tab = handle_tab_create(notebook, file_name, editor, file_path);
+    let icon_name =
+        crate::ui::w_explorer::tree_cell::get_icon_for_name(&file_name, TreeNodeType::File);
+    let tab = handle_tab_create(notebook, file_name, editor, file_path, icon_name);
 
     // Save to cache
     super::cache::insert_to_cache(tab);
@@ -48,12 +52,14 @@ fn handle_tab_create(
     file_name: String,
     editor: sourceview4::View,
     file_path: String,
+    icon_name: String,
 ) -> NotebookTabCache {
-    let tab_position = create_notebook_tab(notebook, file_name.as_str(), editor.upcast());
+    let tab_position = create_notebook_tab(notebook, editor.upcast(), &file_name, &icon_name);
 
     NotebookTabCache {
         file_path,
         position: tab_position,
+        icon_name,
     }
 }
 

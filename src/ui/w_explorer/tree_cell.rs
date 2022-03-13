@@ -1,9 +1,11 @@
-use gtk::{TreeViewColumn, CellRenderer, TreeModel, TreeIter, traits::TreeModelExt, prelude::ObjectExt, CellRendererText, CellRendererPixbuf};
+use gtk::{
+    prelude::ObjectExt, traits::TreeModelExt, CellRenderer, CellRendererPixbuf, CellRendererText,
+    TreeIter, TreeModel, TreeViewColumn,
+};
 
 use super::model::{RootTreeModel, TreeNodeType};
 
-pub 
-fn set_cell_data(
+pub fn set_cell_data(
     _: &TreeViewColumn,
     cell: &CellRenderer,
     tree_model: &TreeModel,
@@ -26,11 +28,11 @@ fn set_cell_data(
             .property_value("item-type")
             .get::<TreeNodeType>()
             .unwrap();
-        
+
         let filename = filename.get().unwrap();
         let filetype = get_icon_for_name(filename, icon_type);
-        
-        let icon_name =  match icon_type {
+
+        let icon_name = match icon_type {
             TreeNodeType::Unknown => "dialog-warning",
             TreeNodeType::Directory => filetype.as_str(),
             TreeNodeType::File => filetype.as_str(),
@@ -40,12 +42,13 @@ fn set_cell_data(
     }
 }
 
-
-fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
+pub fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
     if icon_type == TreeNodeType::Directory {
         return "folder".to_owned();
     }
 
     let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
-    guess.as_str().to_owned()
+    guess.as_str()
+    // FIXME: find a better way
+    .replace("/", "-")
 }
