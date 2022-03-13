@@ -5,7 +5,7 @@ use gtk::{
     glib,
     prelude::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
-        GtkWindowExt, NotebookExtManual, ObjectExt, WidgetExt,
+        GtkWindowExt, NotebookExtManual, WidgetExt,
     },
     Application, ApplicationWindow, Builder, Notebook, Statusbar, TreeView,
 };
@@ -83,23 +83,6 @@ fn build_ui(app: &Application) {
     });
 }
 
-fn configure_icon_theme() {
-    let icon_themes = ["adwaita", "default"];
-    let app_settings = gtk::Settings::default();
-
-    for theme_name in icon_themes.iter() {
-        let result = app_settings
-            .clone()
-            .unwrap()
-            .try_set_property("gtk-icon-theme-name", theme_name);
-        if result.is_err() {
-            eprintln!("Setting GTK icon theme to {} failed", theme_name);
-        } else {
-            break;
-        }
-    }
-}
-
 fn main() {
     let application = Application::new(
         Some("com.github.shanmukhateja.my-studio-ide"),
@@ -120,8 +103,6 @@ fn main() {
 
             Workspace::update_path(workspace_dir_str.to_string());
         }
-
-        configure_icon_theme();
 
         build_ui(app);
 
