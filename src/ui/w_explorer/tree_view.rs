@@ -1,11 +1,12 @@
+use std::path::Path;
+
 use gtk::{
-    glib,
+    glib::{self, Sender},
     prelude::{
         BuilderExtManual, ObjectExt, StaticType, ToValue, TreeModelExt, TreeSelectionExt,
-        TreeStoreExtManual, TreeViewExt
+        TreeStoreExtManual, TreeViewExt,
     },
-    CellRenderer, CellRendererPixbuf, CellRendererText, TreeIter, TreeModel, TreeStore,
-    TreeViewColumn
+    TreeStore,
 };
 
 use crate::{
@@ -13,16 +14,10 @@ use crate::{
     workspace::Workspace, G_TREE,
 };
 
-use super::model::{TreeInfo, TreeNodeType};
-
-fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
-    if icon_type == TreeNodeType::Directory {
-        return "folder".to_owned();
-    }
-
-    let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
-    guess.as_str().to_owned()
-}
+use super::{
+    model::{TreeInfo, TreeNodeType},
+    tree_cell::set_cell_data,
+};
 
 pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     G_TREE.with(|tree| {
@@ -77,43 +72,6 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     });
 }
 
-fn set_cell_data(
-    _: &TreeViewColumn,
-    cell: &CellRenderer,
-    tree_model: &TreeModel,
-    tree_iter: &TreeIter,
-) {
-    let tree_model = tree_model
-        .value(tree_iter, 0)
-        .get::<RootTreeModel>()
-        .unwrap();
-
-    // Set the text
-    let filename = tree_model.property_value("file-name");
-    if cell.is::<CellRendererText>() {
-        cell.set_property("text", filename.clone());
-    }
-
-    // Set icon
-    if cell.is::<CellRendererPixbuf>() {
-        let icon_type = tree_model
-            .property_value("item-type")
-            .get::<TreeNodeType>()
-            .unwrap();
-        
-        let filename = filename.get().unwrap();
-        let filetype = get_icon_for_name(filename, icon_type);
-        
-        let icon_name =  match icon_type {
-            TreeNodeType::Unknown => "dialog-warning",
-            TreeNodeType::Directory => filetype.as_str(),
-            TreeNodeType::File => filetype.as_str(),
-            TreeNodeType::Workspace => "folder-open",
-        };
-        cell.set_property("icon-name", icon_name);
-    }
-}
-
 fn build_tree_model() -> TreeStore {
     let store = TreeStore::new(&[RootTreeModel::static_type()]);
 
@@ -129,15 +87,12 @@ fn build_tree_model() -> TreeStore {
 
     // Custom Model
     let tree_model_struct = RootTreeModel::new();
-    tree_model_struct
-        .set_property("file-name", &root_dir.file_name().to_str().unwrap());
-    tree_model_struct
-        .set_property(
-            "abs-path",
-            &root_dir.parent_path().as_os_str().to_str().unwrap(),
-        );
-    tree_model_struct
-        .set_property("item-type", &TreeNodeType::Workspace);
+    tree_model_struct.set_property("file-name", &root_dir.file_name().to_str().unwrap());
+    tree_model_struct.set_property(
+        "abs-path",
+        &root_dir.parent_path().as_os_str().to_str().unwrap(),
+    );
+    tree_model_struct.set_property("item-type", &TreeNodeType::Workspace);
 
     let root_iter = store.insert_with_values(None, Some(1_u32), &[(0_u32, &tree_model_struct)]);
 
@@ -171,14 +126,11 @@ fn build_tree_model() -> TreeStore {
         } else {
             &TreeNodeType::File
         };
-        tree_model_struct
-            .set_property("file-name", &entry_file_str);
-        tree_model_struct
-            .set_property("abs-path", &entry_path_str);
+        tree_model_struct.set_property("file-name", &entry_file_str);
+        tree_model_struct.set_property("abs-path", &entry_path_str);
         tree_model_struct.set_property("item-type", &item_type);
 
-        let m_iter =
-            store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
+        let m_iter = store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
 
         // Save to info list
         tree_info.push(TreeInfo {
@@ -186,7 +138,6 @@ fn build_tree_model() -> TreeStore {
             value: String::from(entry_path_str),
         });
     }
-
 
     store
 }
@@ -197,4 +148,39 @@ pub fn update_tree_model(tree: &gtk::TreeView) {
     let root_node_path = gtk::TreePath::from_indicesv(&[0]);
     tree.expand_row(&root_node_path, false);
     tree.selection().select_path(&root_node_path);
+}
+
+pub fn handle_tree_view_event(tree_model: Option<RootTreeModel>, tx: &Sender<CommEvents>) {
+    if tree_model.is_none() {
+        // Reset workspace's 'current open file' tracker
+        Workspace::set_open_file_path(None);
+        return;
+    }
+    // Concat workspace dir path with selection
+    let tree_item_abs_path = &tree_model.unwrap().property::<String>("abs-path");
+    let file_path = Path::new(tree_item_abs_path);
+
+    let mut content = String::from("The selected item is not a file.");
+    if file_path.is_file() {
+        match std::fs::read(file_path) {
+            Ok(data) => {
+                content =
+                    String::from_utf8(data).unwrap_or_else(|_| "File not supported".to_string());
+                // Update workspace's 'current open file' tracker
+                let open_file_path = file_path.as_os_str().to_str().unwrap();
+                Workspace::set_open_file_path(Some(String::from(open_file_path)));
+            }
+            Err(error) => {
+                println!("Unable to read file, {}", error);
+            }
+        }
+    }
+
+    let file_path_string = String::from(file_path.to_str().unwrap());
+
+    tx.send(CommEvents::SpawnOrFocusTab(
+        Some(file_path_string),
+        Some(content),
+    ))
+    .ok();
 }
