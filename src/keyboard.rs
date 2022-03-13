@@ -5,16 +5,15 @@ use std::cell::RefCell;
 use crate::{
     comms::CommEvents,
     ui::action_row::ui::{on_open_dir_clicked, on_save_changes_clicked},
-    G_WINDOW,
 };
 
-use gtk::gdk;
 use gtk::glib::Sender;
 use gtk::prelude::{AccelGroupExtManual, GtkWindowExt};
+use gtk::{gdk, ApplicationWindow};
 
 thread_local! {static KEY_EVENT_TRACKER : RefCell<Vec<gdk::EventKey>> = RefCell::new(Vec::new())}
 
-pub fn listen_for_events(tx: Sender<CommEvents>) {
+pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
     let tx_clone = tx.clone();
 
     // "Open Workspace" Keyboard shortcut
@@ -31,9 +30,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>) {
         },
     );
 
-    G_WINDOW.with(|w| {
-        w.borrow().clone().unwrap().add_accel_group(&accel_group);
-    });
+    window.add_accel_group(&accel_group);
 
     // "Save Changes" Keyboard shortcut
     let (accel_key, accel_mods) = gtk::accelerator_parse("<Ctrl>S");
@@ -49,7 +46,5 @@ pub fn listen_for_events(tx: Sender<CommEvents>) {
         },
     );
 
-    G_WINDOW.with(|w| {
-        w.borrow().clone().unwrap().add_accel_group(&accel_group);
-    });
+    window.add_accel_group(&accel_group);
 }

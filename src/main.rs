@@ -20,7 +20,7 @@ mod mys_fs;
 use workspace::Workspace;
 
 // Declare GUI widgets in TLS for 'global' access
-thread_local! { pub static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
+thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
 thread_local! { pub static G_TEXT_VIEW: RefCell<Option<sourceview4::View>> = RefCell::new(None) }
 thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
@@ -77,7 +77,7 @@ fn build_ui(app: &Application) {
         comms::handle_comm_event(tx, rx);
 
         // Keyboard events
-        crate::keyboard::listen_for_events(tx_clone.clone());
+        crate::keyboard::listen_for_events(tx_clone.clone(), &window.borrow().clone().unwrap());
 
         window.borrow().clone().unwrap().show_all();
     });
