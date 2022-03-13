@@ -1,0 +1,85 @@
+use std::{ops::ControlFlow, path::Path};
+
+use gtk::prelude::{Cast, NotebookExtManual};
+
+use super::{
+    cache::{self as notebook_cache, NotebookTabCache},
+    editor::{set_editor_defaut_options, set_text_on_editor},
+    nbmain::{create_notebook_tab, get_notebook},
+};
+
+pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
+    let notebook = get_notebook().unwrap();
+
+    // Reset UI & return if None
+    if let ControlFlow::Break(_) = reset_ui_if_needed(&file_path, &content, &notebook) {
+        return;
+    }
+
+    //  Check if tab is already created for the file and focus it instead
+
+    if let ControlFlow::Break(_) = focus_tab_if_exists(file_path.clone(), &notebook) {
+        return;
+    }
+
+    //  Create New Tab
+    let file_path = file_path.unwrap();
+    let file_name = Path::new(&file_path)
+        .file_name()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    // Add content to child of tab
+    let editor = sourceview4::View::new();
+    set_editor_defaut_options(&editor);
+    set_text_on_editor(&editor, Some(file_path.clone()), content);
+
+    // create new tab
+    let tab = handle_tab_create(notebook, file_name, editor, file_path);
+
+    // Save to cache
+    super::cache::insert_to_cache(tab);
+}
+
+fn handle_tab_create(
+    notebook: gtk::Notebook,
+    file_name: String,
+    editor: sourceview4::View,
+    file_path: String,
+) -> NotebookTabCache {
+    let tab_position = create_notebook_tab(notebook, file_name.as_str(), editor.upcast());
+
+    NotebookTabCache {
+        file_path,
+        position: tab_position,
+    }
+}
+
+fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> ControlFlow<()> {
+    let file_path = file_path.unwrap();
+    if let Some(network_tab_cache) = notebook_cache::find_tab_by_path(file_path) {
+        notebook.set_current_page(Some(network_tab_cache.position));
+        return ControlFlow::Break(());
+    }
+    ControlFlow::Continue(())
+}
+
+fn reset_ui_if_needed(
+    file_path: &Option<String>,
+    content: &Option<String>,
+    notebook: &gtk::Notebook,
+) -> ControlFlow<()> {
+    if file_path.is_none() || content.is_none() {
+        for _ in 0..notebook.n_pages() {
+            notebook.remove_page(Some(0));
+        }
+
+        // reset tabs cache
+        notebook_cache::reset_cache();
+
+        return ControlFlow::Break(());
+    }
+    ControlFlow::Continue(())
+}
