@@ -76,6 +76,7 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
                 <property name="can-focus">True</property>
                 <property name="focus-on-click">False</property>
                 <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Open Workspace</property>
                 <property name="action-name">win.open_workspace</property>
                 <property name="image">image_open_workspace</property>
                 <property name="always-show-image">True</property>
@@ -90,6 +91,7 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Save Changes</property>
                 <property name="action-name">win.save_changes</property>
                 <property name="image">image_save_changes</property>
                 <property name="always-show-image">True</property>

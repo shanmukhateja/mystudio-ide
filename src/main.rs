@@ -5,7 +5,7 @@ use gtk::{
     glib,
     prelude::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
-        GtkWindowExt, NotebookExtManual, ObjectExt, WidgetExt,
+        GtkWindowExt, NotebookExtManual, WidgetExt,
     },
     Application, ApplicationWindow, Builder, Notebook, Statusbar, TreeView,
 };
@@ -20,7 +20,7 @@ mod mys_fs;
 use workspace::Workspace;
 
 // Declare GUI widgets in TLS for 'global' access
-thread_local! { pub static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
+thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
 thread_local! { pub static G_TEXT_VIEW: RefCell<Option<sourceview4::View>> = RefCell::new(None) }
 thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
@@ -77,27 +77,10 @@ fn build_ui(app: &Application) {
         comms::handle_comm_event(tx, rx);
 
         // Keyboard events
-        crate::keyboard::listen_for_events(tx_clone.clone());
+        crate::keyboard::listen_for_events(tx_clone.clone(), &window.borrow().clone().unwrap());
 
         window.borrow().clone().unwrap().show_all();
     });
-}
-
-fn configure_icon_theme() {
-    let icon_themes = ["adwaita", "default"];
-    let app_settings = gtk::Settings::default();
-
-    for theme_name in icon_themes.iter() {
-        let result = app_settings
-            .clone()
-            .unwrap()
-            .try_set_property("gtk-icon-theme-name", theme_name);
-        if result.is_err() {
-            eprintln!("Setting GTK icon theme to {} failed", theme_name);
-        } else {
-            break;
-        }
-    }
 }
 
 fn main() {
@@ -120,8 +103,6 @@ fn main() {
 
             Workspace::update_path(workspace_dir_str.to_string());
         }
-
-        configure_icon_theme();
 
         build_ui(app);
 
