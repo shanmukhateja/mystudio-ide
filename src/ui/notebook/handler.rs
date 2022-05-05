@@ -6,7 +6,7 @@ use crate::ui::w_explorer::model::TreeNodeType;
 
 use super::{
     cache::{self as notebook_cache, NotebookTabCache},
-    editor::{set_editor_defaut_options, set_text_on_editor},
+    editor::{get_editor_instance, set_text_on_editor},
     nbmain::{create_notebook_tab, get_notebook},
 };
 
@@ -34,9 +34,8 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
         .to_string();
 
     // Add content to child of tab
-    let editor = sourceview4::View::new();
-    set_editor_defaut_options(&editor);
-    set_text_on_editor(&editor, Some(file_path.clone()), content);
+    let editor = get_editor_instance();
+    set_text_on_editor(Some(editor.clone()), Some(file_path.clone()), content);
 
     // create new tab
     let icon_name =

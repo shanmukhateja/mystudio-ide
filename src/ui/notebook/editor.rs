@@ -5,12 +5,19 @@ use gtk::{
 };
 use sourceview4::{
     traits::{BufferExt, LanguageManagerExt, ViewExt},
-    LanguageManager,
+    LanguageManager, View,
 };
 
 use super::nbmain::get_notebook;
 
-pub fn set_editor_defaut_options(view: &sourceview4::View) {
+pub fn get_editor_instance() -> View {
+    let editor = sourceview4::View::new();
+    set_editor_defaut_options(&editor);
+
+    editor
+}
+
+fn set_editor_defaut_options(view: &View) {
     view.set_show_line_marks(true);
     view.set_show_line_numbers(true);
     view.set_auto_indent(true);
@@ -30,13 +37,13 @@ pub fn set_editor_defaut_options(view: &sourceview4::View) {
 }
 
 #[allow(clippy::unnecessary_unwrap)]
-pub fn get_editor_by_path(file_path: String) -> Option<sourceview4::View> {
+pub fn get_editor_by_path(file_path: String) -> Option<View> {
     let notebook_tab = notebook_cache::find_tab_by_path(file_path);
     let page_num = notebook_tab.map(|f| f.position);
 
     let notebook = get_notebook().unwrap();
     let page = notebook.nth_page(page_num);
-    page.map(|page| page.downcast::<sourceview4::View>().unwrap())
+    page.map(|page| page.downcast::<View>().unwrap())
 }
 
 pub fn get_text_buffer_by_path(file_path: String) -> Option<gtk::TextBuffer> {
@@ -46,10 +53,16 @@ pub fn get_text_buffer_by_path(file_path: String) -> Option<gtk::TextBuffer> {
 }
 
 pub fn set_text_on_editor(
-    editor: &sourceview4::View,
+    mut editor: Option<View>,
     file_path: Option<String>,
     content: Option<String>,
 ) {
+
+    if editor.is_none() {
+        editor = Some(get_editor_instance());
+    }
+    let editor = editor.unwrap();
+    
     match content {
         Some(content) => {
             let source_buffer = sourceview4::Buffer::builder()

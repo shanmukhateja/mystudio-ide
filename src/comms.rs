@@ -8,7 +8,7 @@ use crate::{
     workspace::Workspace,
 };
 
-use crate::{G_TEXT_VIEW, G_TREE};
+use crate::G_TREE;
 
 // A 'global' way to trigger GUI events
 pub enum CommEvents {
@@ -44,10 +44,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                 handle_tree_view_event(tree_model, &tx);
             }
             CommEvents::UpdateRootTextViewContent(file_path, content) => {
-                G_TEXT_VIEW.with(|editor| {
-                    let editor = &editor.borrow().clone().unwrap();
-                    set_text_on_editor(editor, file_path, content);
-                });
+                set_text_on_editor(None, file_path, content);
             }
             CommEvents::SaveEditorChanges() => {
                 let file_absolute_path = Workspace::get_open_file_path();

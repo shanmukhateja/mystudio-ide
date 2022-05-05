@@ -22,7 +22,6 @@ use workspace::Workspace;
 // Declare GUI widgets in TLS for 'global' access
 thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
-thread_local! { pub static G_TEXT_VIEW: RefCell<Option<sourceview4::View>> = RefCell::new(None) }
 thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
 thread_local! { pub static G_NOTEBOOK: RefCell<Option<Notebook>> = RefCell::new(None) }
 
@@ -59,12 +58,6 @@ fn build_ui(app: &Application) {
             let notebook = notebook.unwrap();
             // Remove placeholder
             notebook.remove_page(Some(0));
-        });
-
-        // Text Editor
-        G_TEXT_VIEW.with(|editor| {
-            *editor.borrow_mut() = builder.object("main_text_editor");
-            assert!(editor.borrow().is_some());
         });
 
         // Status bar
