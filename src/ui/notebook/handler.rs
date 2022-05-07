@@ -1,6 +1,6 @@
 use std::{ops::ControlFlow, path::Path};
 
-use gtk::prelude::{Cast, NotebookExtManual};
+use gtk::prelude::NotebookExtManual;
 
 use crate::ui::w_explorer::model::TreeNodeType;
 
@@ -53,7 +53,7 @@ fn handle_tab_create(
     file_path: String,
     icon_name: String,
 ) -> NotebookTabCache {
-    let tab_position = create_notebook_tab(notebook, editor.upcast(), &file_name, &icon_name);
+    let tab_position = create_notebook_tab(notebook, editor, &file_name, &icon_name);
 
     NotebookTabCache {
         file_path,

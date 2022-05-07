@@ -1,6 +1,6 @@
 use gtk::{
     glib,
-    prelude::NotebookExtManual,
+    prelude::{NotebookExtManual, Cast},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
     IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
@@ -14,7 +14,7 @@ pub fn get_notebook() -> Option<Notebook> {
 // Borrowed from https://github.com/gtk-rs/gtk3-rs/blob/9046f47158093d6fa40aa32ffbb0abaa75d57fd0/examples/notebook/notebook.rs#L18
 pub fn create_notebook_tab(
     notebook: Notebook,
-    widget: Widget,
+    editor: sourceview4::View,
     title: &str,
     icon_name: &str,
 ) -> u32 {
@@ -32,10 +32,11 @@ pub fn create_notebook_tab(
     tab.pack_start(&button, false, false, 0);
     tab.show_all();
 
-    let index = notebook.append_page(&widget, Some(&tab));
+    let editor_widget = editor.upcast::<Widget>();
+    let index = notebook.append_page(&editor_widget, Some(&tab));
 
     button.connect_clicked(glib::clone!(@weak notebook => move |_| {
-        close_notebook_tab(&widget);
+        close_notebook_tab(&editor_widget);
     }));
 
     // Show Notebook widget (GTK+ widgets hide themselves by default)
