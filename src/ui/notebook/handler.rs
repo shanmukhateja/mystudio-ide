@@ -64,8 +64,8 @@ fn handle_tab_create(
 
 fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> ControlFlow<()> {
     let file_path = file_path.unwrap();
-    if let Some(network_tab_cache) = notebook_cache::find_tab_by_path(file_path) {
-        notebook.set_current_page(Some(network_tab_cache.position));
+    if let Some(nb_tab_cache) = notebook_cache::find_tab_by_path(file_path) {
+        notebook.set_current_page(Some(nb_tab_cache.position));
         return ControlFlow::Break(());
     }
     ControlFlow::Continue(())
