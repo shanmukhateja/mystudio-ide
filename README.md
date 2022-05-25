@@ -19,5 +19,3 @@ An IDE built from scratch in Rust as a learning experience.
 ## Contributing
 
 PRs are appreciated for bug fixes. In the case of feature requests, create an issue on GitHub so we can discuss it before you spend a lot of time on it :) 
-
-PRs are to be made exclusively to `development` branch.
