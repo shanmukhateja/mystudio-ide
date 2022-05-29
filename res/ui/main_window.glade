@@ -194,25 +194,18 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkViewport">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
+                <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkNotebook" id="editor_notebook">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
                     <child>
-                      <object class="GtkNotebook" id="editor_notebook">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child type="tab">
-                          <placeholder/>
-                        </child>
-                      </object>
+                      <placeholder/>
+                    </child>
+                    <child type="tab">
+                      <placeholder/>
                     </child>
                   </object>
                 </child>

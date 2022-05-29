@@ -1,8 +1,8 @@
 use gtk::{
     glib,
-    prelude::{NotebookExtManual, Cast},
+    prelude::{Cast, NotebookExtManual},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
-    IconSize, Notebook, Orientation, ReliefStyle, Widget,
+    Adjustment, IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
 
 use crate::{ui::notebook::cache as notebook_cache, G_NOTEBOOK};
@@ -33,7 +33,10 @@ pub fn create_notebook_tab(
     tab.show_all();
 
     let editor_widget = editor.upcast::<Widget>();
-    let index = notebook.append_page(&editor_widget, Some(&tab));
+
+    let my_scroll_window_widget = enable_scroll_for_sourceview(editor_widget.clone());
+
+    let index = notebook.append_page(&my_scroll_window_widget, Some(&tab));
 
     button.connect_clicked(glib::clone!(@weak notebook => move |_| {
         close_notebook_tab(&editor_widget);
@@ -46,6 +49,26 @@ pub fn create_notebook_tab(
     notebook.set_current_page(Some(index));
 
     index
+}
+
+/**
+ * Wrap a given `sourceview::View` widget inside `ScrolledWindow` & `Viewport`
+ */
+fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
+    // ScrolledWindow to enable scrollable content
+    let my_scroll_window =
+        gtk::ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
+    let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
+
+    // Every ScrolledWindow needs a Viewport
+    let my_viewport =
+        gtk::Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
+
+    // Add sourceview to `Viewport` and `Viewport` to `ScrolledWindow`
+    my_viewport.add(&editor_widget);
+    my_scroll_window.add(&my_viewport);
+
+    my_scroll_window_widget
 }
 
 fn close_notebook_tab(widget: &Widget) {
