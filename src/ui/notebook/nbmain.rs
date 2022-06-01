@@ -5,7 +5,9 @@ use gtk::{
     Adjustment, IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
 
-use crate::{ui::notebook::cache as notebook_cache, G_NOTEBOOK};
+use crate::G_NOTEBOOK;
+
+use super::cache::NotebookTabCache;
 
 pub fn get_notebook() -> Option<Notebook> {
     G_NOTEBOOK.with(move |notebook| notebook.borrow().clone())
@@ -79,5 +81,5 @@ fn close_notebook_tab(widget: &Widget) {
     notebook.remove_page(Some(index));
 
     // Also remove from cache
-    notebook_cache::remove_from_cache(index);
+    NotebookTabCache::remove(index);
 }

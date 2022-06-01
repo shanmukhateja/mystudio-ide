@@ -1,4 +1,3 @@
-use crate::ui::notebook::cache as notebook_cache;
 use gtk::{
     prelude::{Cast, NotebookExtManual},
     traits::{CssProviderExt, TextBufferExt, TextViewExt},
@@ -8,7 +7,7 @@ use sourceview4::{
     LanguageManager, View,
 };
 
-use super::nbmain::get_notebook;
+use super::{nbmain::get_notebook, cache::NotebookTabCache};
 
 pub fn get_editor_instance() -> View {
     let editor = sourceview4::View::new();
@@ -38,7 +37,7 @@ fn set_editor_defaut_options(view: &View) {
 
 #[allow(clippy::unnecessary_unwrap)]
 pub fn get_editor_by_path(file_path: String) -> Option<View> {
-    let notebook_tab = notebook_cache::find_tab_by_path(file_path);
+    let notebook_tab = NotebookTabCache::find_by_path(file_path);
     let page_num = notebook_tab.map(|f| f.position);
 
     let notebook = get_notebook().unwrap();

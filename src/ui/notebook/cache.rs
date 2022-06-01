@@ -17,28 +17,30 @@ impl Clone for NotebookTabCache {
     }
 }
 
+impl NotebookTabCache {
+    pub fn insert(tab: NotebookTabCache) {
+        let mut cache = NOTEBOOK_TABS_CACHE.write();
+        cache.push(tab);    
+    }
+
+    pub fn remove(index: u32) {
+        let mut cache = NOTEBOOK_TABS_CACHE.write();
+        cache.swap_remove(index as usize);
+    }
+
+    pub fn find_by_path(file_path: String) -> Option<NotebookTabCache> {
+        let cache = NOTEBOOK_TABS_CACHE.read();
+        cache
+            .iter()
+            .find(|i| i.file_path == file_path)
+            .map(|value| NotebookTabCache::clone(value))
+    }
+
+    pub fn reset() {
+        NOTEBOOK_TABS_CACHE.write().clear();
+    }
+}
+
 // Holds reference to NotebookTabCache
 #[dynamic]
 static mut NOTEBOOK_TABS_CACHE: Vec<NotebookTabCache> = Vec::new();
-
-pub fn insert_to_cache(tab: NotebookTabCache) {
-    let mut cache = NOTEBOOK_TABS_CACHE.write();
-    cache.push(tab);
-}
-
-pub fn remove_from_cache(index: u32) {
-    let mut cache = NOTEBOOK_TABS_CACHE.write();
-    cache.swap_remove(index as usize);
-}
-
-pub fn find_tab_by_path(file_path: String) -> Option<NotebookTabCache> {
-    let cache = NOTEBOOK_TABS_CACHE.read();
-    cache
-        .iter()
-        .find(|i| i.file_path == file_path)
-        .map(|value| NotebookTabCache::clone(value))
-}
-
-pub fn reset_cache() {
-    NOTEBOOK_TABS_CACHE.write().clear();
-}

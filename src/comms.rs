@@ -71,6 +71,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     }
                 }
             }
+            
         }
         // Don't forget to include this!
         glib::Continue(true)

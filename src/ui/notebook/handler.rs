@@ -5,7 +5,7 @@ use gtk::prelude::NotebookExtManual;
 use crate::ui::w_explorer::model::TreeNodeType;
 
 use super::{
-    cache::{self as notebook_cache, NotebookTabCache},
+    cache::NotebookTabCache,
     editor::{get_editor_instance, set_text_on_editor},
     nbmain::{create_notebook_tab, get_notebook},
 };
@@ -43,7 +43,7 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
     let tab = handle_tab_create(notebook, file_name, editor, file_path, icon_name);
 
     // Save to cache
-    super::cache::insert_to_cache(tab);
+    NotebookTabCache::insert(tab);
 }
 
 fn handle_tab_create(
@@ -64,7 +64,7 @@ fn handle_tab_create(
 
 fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> ControlFlow<()> {
     let file_path = file_path.unwrap();
-    if let Some(nb_tab_cache) = notebook_cache::find_tab_by_path(file_path) {
+    if let Some(nb_tab_cache) = NotebookTabCache::find_by_path(file_path) {
         notebook.set_current_page(Some(nb_tab_cache.position));
         return ControlFlow::Break(());
     }
@@ -82,7 +82,7 @@ fn reset_ui_if_needed(
         }
 
         // reset tabs cache
-        notebook_cache::reset_cache();
+        NotebookTabCache::reset();
 
         return ControlFlow::Break(());
     }
