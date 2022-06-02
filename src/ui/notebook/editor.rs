@@ -1,13 +1,14 @@
 use gtk::{
-    prelude::{Cast, NotebookExtManual},
+    prelude::{Cast, ContainerExt, NotebookExtManual},
     traits::{CssProviderExt, TextBufferExt, TextViewExt},
+    ScrolledWindow, Viewport,
 };
 use sourceview4::{
     traits::{BufferExt, LanguageManagerExt, ViewExt},
     LanguageManager, View,
 };
 
-use super::{nbmain::get_notebook, cache::NotebookTabCache};
+use super::{cache::NotebookTabCache, nbmain::get_notebook};
 
 pub fn get_editor_instance() -> View {
     let editor = sourceview4::View::new();
@@ -42,7 +43,26 @@ pub fn get_editor_by_path(file_path: String) -> Option<View> {
 
     let notebook = get_notebook().unwrap();
     let page = notebook.nth_page(page_num);
-    page.map(|page| page.downcast::<View>().unwrap())
+
+    let scrolled_window = page.map(|page| page.downcast::<ScrolledWindow>().unwrap());
+    let scrolled_window_children = scrolled_window.unwrap().children();
+
+    let viewport_widget = scrolled_window_children.first();
+    let viewport = viewport_widget
+        .unwrap()
+        .clone()
+        .downcast::<Viewport>()
+        .unwrap();
+
+    let view = viewport
+        .children()
+        .first()
+        .unwrap()
+        .clone()
+        .downcast::<View>()
+        .unwrap();
+
+    Some(view)
 }
 
 pub fn get_text_buffer_by_path(file_path: String) -> Option<gtk::TextBuffer> {
@@ -61,7 +81,7 @@ pub fn set_text_on_editor(
         editor = Some(get_editor_instance());
     }
     let editor = editor.unwrap();
-    
+
     match content {
         Some(content) => {
             let source_buffer = sourceview4::Buffer::builder()
