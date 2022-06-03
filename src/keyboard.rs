@@ -4,7 +4,10 @@ use std::cell::RefCell;
 
 use crate::{
     comms::CommEvents,
-    ui::action_row::ui::{on_open_dir_clicked, on_save_changes_clicked},
+    ui::{
+        action_row::ui::{on_open_dir_clicked, on_save_changes_clicked},
+        statusbar::line_indicator::show_goto_dialog
+    }, workspace::Workspace,
 };
 
 use gtk::glib::Sender;
@@ -42,6 +45,25 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
         gtk::AccelFlags::VISIBLE,
         move |_, _, _, _| {
             on_save_changes_clicked(&tx_clone);
+            true
+        },
+    );
+
+    window.add_accel_group(&accel_group);
+
+    // Goto Line
+
+    let (accel_key, accel_mods) = gtk::accelerator_parse("<Ctrl>G");
+    let accel_group = gtk::AccelGroup::new();
+
+    accel_group.connect_accel_group(
+        accel_key,
+        accel_mods,
+        gtk::AccelFlags::VISIBLE,
+        move |_, _, _, _| {
+            if Workspace::get_open_file_path().is_some() {
+                show_goto_dialog();
+            }
             true
         },
     );

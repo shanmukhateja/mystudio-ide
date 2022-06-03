@@ -7,7 +7,7 @@ use gtk::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
         GtkWindowExt, NotebookExtManual, WidgetExt,
     },
-    Application, ApplicationWindow, Builder, Notebook, Statusbar, TreeView,
+    Application, ApplicationWindow, Builder, Notebook, TreeView,
 };
 
 pub mod comms;
@@ -20,9 +20,9 @@ mod mys_fs;
 use workspace::Workspace;
 
 // Declare GUI widgets in TLS for 'global' access
+thread_local! { pub static G_BUILDER: RefCell<Option<Builder>> = RefCell::new(None) }
 thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
-thread_local! { pub static G_STATUS_BAR: RefCell<Option<Statusbar>> = RefCell::new(None) }
 thread_local! { pub static G_NOTEBOOK: RefCell<Option<Notebook>> = RefCell::new(None) }
 
 fn build_ui(app: &Application) {
@@ -30,6 +30,11 @@ fn build_ui(app: &Application) {
         // Load UI from glade file
         let glade_src = include_str!("../res/ui/main_window.glade");
         let builder: Builder = Builder::from_string(glade_src);
+
+        // Builder
+        G_BUILDER.with(|b| {
+            *b.borrow_mut() = Some(builder.clone());
+        });
 
         // Get Window and set Application instance
         *window.borrow_mut() = builder.object("main_window");
@@ -61,10 +66,8 @@ fn build_ui(app: &Application) {
         });
 
         // Status bar
-        G_STATUS_BAR.with(|status_bar| {
-            *status_bar.borrow_mut() = builder.object("main_status_bar");
-            assert!(status_bar.borrow().is_some());
-        });
+        crate::ui::statusbar::init();
+
 
         // Listen to UI changes
         comms::handle_comm_event(tx, rx);

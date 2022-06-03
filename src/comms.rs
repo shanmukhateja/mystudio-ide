@@ -61,7 +61,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                         );
 
                         // Show message in Status bar
-                        ui::statusbar::show_status_message(format!(
+                        ui::statusbar::message::show_message(format!(
                             "Saved changes to '{}'",
                             &file_abs_path
                         ));

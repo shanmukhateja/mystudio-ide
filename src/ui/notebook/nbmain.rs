@@ -41,7 +41,8 @@ pub fn create_notebook_tab(
     let index = notebook.append_page(&my_scroll_window_widget, Some(&tab));
 
     button.connect_clicked(glib::clone!(@weak notebook => move |_| {
-        close_notebook_tab(&editor_widget);
+        let scrolled_window = &editor_widget.parent().unwrap().parent().unwrap();
+        close_notebook_tab(scrolled_window);
     }));
 
     // Show Notebook widget (GTK+ widgets hide themselves by default)

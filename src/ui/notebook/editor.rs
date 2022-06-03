@@ -103,6 +103,10 @@ pub fn set_text_on_editor(
             // Show cursor on text_view so user can start modifying file
             // FIXME: this is broken because of Notebook UI impl.
             // text_editor.grab_focus();
+
+            // Update line indicator as per cursor movements
+            crate::ui::statusbar::line_indicator::setup_listener(&editor);
+            
         }
         None => {
             // Reset text content
