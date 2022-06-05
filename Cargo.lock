@@ -493,6 +493,7 @@ dependencies = [
  "arc-swap",
  "gtk",
  "jwalk",
+ "sourceview4",
  "static_init",
 ]
 
