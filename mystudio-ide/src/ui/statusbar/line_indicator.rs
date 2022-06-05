@@ -6,13 +6,15 @@ use gtk::{
     Button, Dialog, Entry,
 };
 
-use sourceview4::{View, Buffer};
+use sourceview4::{Buffer, View};
 
 use regex::Regex;
 
 use super::G_LINE_NUMBER;
 
-use crate::{ui::notebook::editor, workspace::Workspace, G_BUILDER};
+use crate::{ui::notebook::editor, G_BUILDER};
+
+use libmystudio::workspace::Workspace;
 
 pub(super) fn init() {
     G_BUILDER.with(|builder| {
@@ -38,7 +40,6 @@ pub(super) fn init() {
 }
 
 pub fn setup_listener(view: &View) {
-
     let buffer = view.buffer().unwrap();
 
     buffer.connect_cursor_position_notify(|buffer| {
@@ -85,7 +86,6 @@ pub fn show_goto_dialog() {
         gtk::Inhibit(false)
     });
 
-    
     dialog.show_all();
 }
 
@@ -127,7 +127,6 @@ fn read_user_input_and_process(input_field: &Entry, dialog: &Dialog) {
 }
 
 fn jump_to_line(line: i32, col: i32) {
-
     let file_path = Workspace::get_open_file_path().unwrap();
 
     let editor = editor::get_editor_by_path(file_path);
@@ -142,8 +141,8 @@ fn jump_to_line(line: i32, col: i32) {
 fn jump_to_line_with_editor(editor: &View, line: i32, col: i32) {
     let buffer = editor.buffer().unwrap();
 
-    // We decrement line, col here as 
-    // it is user input and buffer starts at 0 
+    // We decrement line, col here as
+    // it is user input and buffer starts at 0
     let mut iter = buffer.iter_at_line(line - 1);
     iter.set_line_index(col - 1);
 
@@ -178,7 +177,7 @@ pub fn update(mut line: i32, mut col: i32, should_increment: bool) {
     if line == 0 {
         line = 1;
     } else if should_increment {
-        line +=1;
+        line += 1;
     }
 
     G_LINE_NUMBER.with(|l| {

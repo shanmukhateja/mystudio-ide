@@ -2,10 +2,12 @@ use std::{ops::ControlFlow, path::Path};
 
 use gtk::prelude::NotebookExtManual;
 
-use crate::ui::w_explorer::model::TreeNodeType;
+use libmystudio::{
+    notebook::cache::NotebookTabCache,
+    tree::{tree_cell::get_icon_for_name, tree_model::TreeNodeType},
+};
 
 use super::{
-    cache::NotebookTabCache,
     editor::{get_editor_instance, set_text_on_editor},
     nbmain::{create_notebook_tab, get_notebook},
 };
@@ -38,28 +40,17 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
     set_text_on_editor(Some(editor.clone()), Some(file_path.clone()), content);
 
     // create new tab
-    let icon_name =
-        crate::ui::w_explorer::tree_cell::get_icon_for_name(&file_name, TreeNodeType::File);
-    let tab = handle_tab_create(notebook, file_name, editor, file_path, icon_name);
-
-    // Save to cache
-    NotebookTabCache::insert(tab);
-}
-
-fn handle_tab_create(
-    notebook: gtk::Notebook,
-    file_name: String,
-    editor: sourceview4::View,
-    file_path: String,
-    icon_name: String,
-) -> NotebookTabCache {
+    let icon_name = get_icon_for_name(&file_name, TreeNodeType::File);
     let tab_position = create_notebook_tab(notebook, editor, &file_name, &icon_name);
 
-    NotebookTabCache {
+    let tab = NotebookTabCache {
         file_path,
         position: tab_position,
         icon_name,
-    }
+    };
+
+    // Save to cache
+    NotebookTabCache::insert(tab);
 }
 
 fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> ControlFlow<()> {

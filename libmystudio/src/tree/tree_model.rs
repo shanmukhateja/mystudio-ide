@@ -8,7 +8,6 @@ pub struct TreeInfo {
     pub iter: TreeIter,
 }
 
-
 #[derive(Debug, Eq, PartialEq, Clone, Copy, glib::Enum)]
 #[repr(i32)]
 #[enum_type(name = "TreeNodeType")]

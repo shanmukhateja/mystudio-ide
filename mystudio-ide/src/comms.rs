@@ -1,14 +1,12 @@
 use gtk::glib::{self, Receiver, Sender};
+use libmystudio::tree::tree_model::RootTreeModel;
+use libmystudio::workspace::Workspace;
 
+use crate::ui;
 use crate::ui::notebook::editor::{get_text_buffer_by_path, set_text_on_editor};
 use crate::ui::notebook::handler::handle_notebook_event;
+use crate::ui::w_explorer::G_TREE;
 use crate::ui::w_explorer::tree_view::handle_tree_view_event;
-use crate::{
-    ui::{self, w_explorer::model::RootTreeModel},
-    workspace::Workspace,
-};
-
-use crate::G_TREE;
 
 // A 'global' way to trigger GUI events
 pub enum CommEvents {
@@ -71,7 +69,6 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                     }
                 }
             }
-            
         }
         // Don't forget to include this!
         glib::Continue(true)

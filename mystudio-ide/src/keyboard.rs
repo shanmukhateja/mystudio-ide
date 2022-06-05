@@ -5,14 +5,16 @@ use std::cell::RefCell;
 use crate::{
     comms::CommEvents,
     ui::{
-        action_row::ui::{on_open_dir_clicked, on_save_changes_clicked},
-        statusbar::line_indicator::show_goto_dialog
-    }, workspace::Workspace,
+        action_row::handler::{on_open_dir_clicked, on_save_changes_clicked},
+        statusbar::line_indicator::show_goto_dialog,
+    },
 };
 
-use gtk::glib::Sender;
+use gtk::{glib::Sender, AccelFlags};
 use gtk::prelude::{AccelGroupExtManual, GtkWindowExt};
 use gtk::{gdk, ApplicationWindow};
+
+use libmystudio::workspace::Workspace;
 
 thread_local! {static KEY_EVENT_TRACKER : RefCell<Vec<gdk::EventKey>> = RefCell::new(Vec::new())}
 
@@ -26,7 +28,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
     accel_group.connect_accel_group(
         accel_key,
         accel_mods,
-        gtk::AccelFlags::VISIBLE,
+        AccelFlags::VISIBLE,
         move |_, _, _, _| {
             on_open_dir_clicked(&tx.clone());
             true
@@ -42,7 +44,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
     accel_group.connect_accel_group(
         accel_key,
         accel_mods,
-        gtk::AccelFlags::VISIBLE,
+        AccelFlags::VISIBLE,
         move |_, _, _, _| {
             on_save_changes_clicked(&tx_clone);
             true
@@ -59,7 +61,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
     accel_group.connect_accel_group(
         accel_key,
         accel_mods,
-        gtk::AccelFlags::VISIBLE,
+        AccelFlags::VISIBLE,
         move |_, _, _, _| {
             if Workspace::get_open_file_path().is_some() {
                 show_goto_dialog();

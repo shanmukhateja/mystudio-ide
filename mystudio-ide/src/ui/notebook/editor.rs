@@ -3,12 +3,13 @@ use gtk::{
     traits::{CssProviderExt, TextBufferExt, TextViewExt},
     ScrolledWindow, Viewport,
 };
+use libmystudio::notebook::cache::NotebookTabCache;
 use sourceview4::{
     traits::{BufferExt, LanguageManagerExt, ViewExt},
     LanguageManager, View,
 };
 
-use super::{cache::NotebookTabCache, nbmain::get_notebook};
+use super::nbmain::get_notebook;
 
 pub fn get_editor_instance() -> View {
     let editor = sourceview4::View::new();
@@ -76,7 +77,6 @@ pub fn set_text_on_editor(
     file_path: Option<String>,
     content: Option<String>,
 ) {
-
     if editor.is_none() {
         editor = Some(get_editor_instance());
     }
@@ -106,7 +106,6 @@ pub fn set_text_on_editor(
 
             // Update line indicator as per cursor movements
             crate::ui::statusbar::line_indicator::setup_listener(&editor);
-            
         }
         None => {
             // Reset text content

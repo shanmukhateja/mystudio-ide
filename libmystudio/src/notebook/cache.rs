@@ -20,7 +20,7 @@ impl Clone for NotebookTabCache {
 impl NotebookTabCache {
     pub fn insert(tab: NotebookTabCache) {
         let mut cache = NOTEBOOK_TABS_CACHE.write();
-        cache.push(tab);    
+        cache.push(tab);
     }
 
     pub fn remove(index: u32) {

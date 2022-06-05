@@ -9,15 +9,18 @@ use gtk::{
     TreeStore,
 };
 
-use crate::{
-    comms::CommEvents, mys_fs::reader::read_dir_recursive, ui::w_explorer::model::RootTreeModel,
-    workspace::Workspace, G_TREE,
+use crate::comms::CommEvents;
+
+use libmystudio::{
+    fs::read_dir_recursive,
+    tree::{
+        tree_cell::set_cell_data,
+        tree_model::{RootTreeModel, TreeInfo, TreeNodeType},
+    },
+    workspace::Workspace,
 };
 
-use super::{
-    model::{TreeInfo, TreeNodeType},
-    tree_cell::set_cell_data,
-};
+use super::G_TREE;
 
 pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     G_TREE.with(|tree| {
