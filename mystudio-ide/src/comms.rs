@@ -5,8 +5,8 @@ use libmystudio::workspace::Workspace;
 use crate::ui;
 use crate::ui::notebook::editor::{get_text_buffer_by_path, set_text_on_editor};
 use crate::ui::notebook::handler::handle_notebook_event;
-use crate::ui::w_explorer::G_TREE;
 use crate::ui::w_explorer::tree_view::handle_tree_view_event;
+use crate::ui::w_explorer::G_TREE;
 
 // A 'global' way to trigger GUI events
 pub enum CommEvents {

@@ -10,9 +10,9 @@ use crate::{
     },
 };
 
-use gtk::{glib::Sender, AccelFlags};
 use gtk::prelude::{AccelGroupExtManual, GtkWindowExt};
 use gtk::{gdk, ApplicationWindow};
+use gtk::{glib::Sender, AccelFlags};
 
 use libmystudio::workspace::Workspace;
 
