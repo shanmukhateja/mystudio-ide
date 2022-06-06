@@ -27,7 +27,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
         match msg {
             CommEvents::UpdateRootTree() => {
                 G_TREE.with(|tree| {
-                    ui::w_explorer::tree_view::update_tree_model(&tree.borrow().clone().unwrap());
+                    RootTreeModel::update_tree_model(&tree.borrow().clone().unwrap());
                     // Reset UI
                     tx.send(CommEvents::RootTreeItemClicked(None)).ok();
                     tx.send(CommEvents::SpawnOrFocusTab(None, None)).ok();
