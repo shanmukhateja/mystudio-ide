@@ -4,10 +4,9 @@ use gtk::{
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
     Adjustment, IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
+use libmystudio::notebook::cache::NotebookTabCache;
 
-use crate::G_NOTEBOOK;
-
-use super::cache::NotebookTabCache;
+use super::G_NOTEBOOK;
 
 pub fn get_notebook() -> Option<Notebook> {
     G_NOTEBOOK.with(move |notebook| notebook.borrow().clone())

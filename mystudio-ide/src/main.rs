@@ -5,25 +5,19 @@ use gtk::{
     glib,
     prelude::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
-        GtkWindowExt, NotebookExtManual, WidgetExt,
+        GtkWindowExt, WidgetExt,
     },
-    Application, ApplicationWindow, Builder, Notebook, TreeView,
+    Application, ApplicationWindow, Builder,
 };
+use libmystudio::workspace::Workspace;
 
 pub mod comms;
 mod keyboard;
 mod ui;
-pub mod workspace;
-
-mod mys_fs;
-
-use workspace::Workspace;
 
 // Declare GUI widgets in TLS for 'global' access
 thread_local! { pub static G_BUILDER: RefCell<Option<Builder>> = RefCell::new(None) }
 thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
-thread_local! { pub static G_TREE: RefCell<Option<TreeView>> = RefCell::new(None) }
-thread_local! { pub static G_NOTEBOOK: RefCell<Option<Notebook>> = RefCell::new(None) }
 
 fn build_ui(app: &Application) {
     G_WINDOW.with(|window| {
@@ -46,28 +40,15 @@ fn build_ui(app: &Application) {
         let tx_clone = &tx.clone();
 
         // Actions buttons menu
-        ui::action_row::ui::setup_actions(&builder, tx.clone());
+        ui::action_row::setup_actions(&builder, tx.clone());
 
         // Tree
-        G_TREE.with(|tree| {
-            *tree.borrow_mut() = builder.object("main_wexplorer_tree");
-            assert!(tree.borrow().is_some());
-            ui::w_explorer::tree_view::setup_tree(&builder, tx.clone());
-        });
-
-        G_NOTEBOOK.with(|notebook| {
-            *notebook.borrow_mut() = builder.object("editor_notebook");
-            let notebook = notebook.borrow().clone();
-            assert!(notebook.is_some());
-
-            let notebook = notebook.unwrap();
-            // Remove placeholder
-            notebook.remove_page(Some(0));
-        });
+        ui::w_explorer::init(&builder, tx.clone());
+        // Notebook
+        ui::notebook::init(&builder);
 
         // Status bar
         crate::ui::statusbar::init();
-
 
         // Listen to UI changes
         comms::handle_comm_event(tx, rx);

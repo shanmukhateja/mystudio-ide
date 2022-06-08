@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'my-studio'",
+            "name": "Debug executable 'mystudio-ide'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=my-studio",
-                    "--package=my-studio"
+                    "--bin=mystudio-ide",
+                    "--package=mystudio-ide"
                 ],
                 "filter": {
-                    "name": "my-studio",
+                    "name": "mystudio-ide",
                     "kind": "bin"
                 }
             },
@@ -25,17 +25,36 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'my-studio'",
+            "name": "Debug unit tests in executable 'mystudio-ide'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=my-studio",
-                    "--package=my-studio"
+                    "--bin=mystudio-ide",
+                    "--package=mystudio-ide"
                 ],
                 "filter": {
-                    "name": "my-studio",
+                    "name": "mystudio-ide",
                     "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'libmystudio'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=libmystudio"
+                ],
+                "filter": {
+                    "name": "libmystudio",
+                    "kind": "lib"
                 }
             },
             "args": [],

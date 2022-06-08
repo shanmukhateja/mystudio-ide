@@ -3,7 +3,7 @@ use gtk::{
     TreeIter, TreeModel, TreeViewColumn,
 };
 
-use super::model::{RootTreeModel, TreeNodeType};
+use super::tree_model::{RootTreeModel, TreeNodeType};
 
 pub fn set_cell_data(
     _: &TreeViewColumn,
@@ -48,7 +48,8 @@ pub fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
     }
 
     let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
-    guess.as_str()
-    // FIXME: find a better way
-    .replace("/", "-")
+    guess
+        .as_str()
+        // FIXME: find a better way
+        .replace("/", "-")
 }
