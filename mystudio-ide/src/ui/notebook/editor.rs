@@ -100,9 +100,6 @@ pub fn set_text_on_editor(
             }
             // update buffer in View
             editor.set_buffer(Some(&source_buffer));
-            // Show cursor on text_view so user can start modifying file
-            // FIXME: this is broken because of Notebook UI impl.
-            // text_editor.grab_focus();
 
             // Update line indicator as per cursor movements
             crate::ui::statusbar::line_indicator::setup_listener(&editor);

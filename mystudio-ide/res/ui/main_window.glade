@@ -201,6 +201,7 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
                   <object class="GtkNotebook" id="editor_notebook">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="has-focus">True</property>
                     <child>
                       <placeholder/>
                     </child>

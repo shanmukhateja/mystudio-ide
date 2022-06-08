@@ -33,7 +33,7 @@ pub fn create_notebook_tab(
     tab.pack_start(&button, false, false, 0);
     tab.show_all();
 
-    let editor_widget = editor.upcast::<Widget>();
+    let editor_widget = editor.clone().upcast::<Widget>();
 
     let my_scroll_window_widget = enable_scroll_for_sourceview(editor_widget.clone());
 
@@ -49,6 +49,10 @@ pub fn create_notebook_tab(
 
     // open the newly created page
     notebook.set_current_page(Some(index));
+
+    // Set focus on first open
+    editor.set_has_focus(true);
+    editor.set_is_focus(true);
 
     index
 }

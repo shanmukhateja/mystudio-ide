@@ -1,6 +1,6 @@
 use std::{ops::ControlFlow, path::Path};
 
-use gtk::prelude::NotebookExtManual;
+use gtk::{prelude::NotebookExtManual, traits::WidgetExt};
 
 use libmystudio::{
     notebook::cache::NotebookTabCache,
@@ -8,7 +8,7 @@ use libmystudio::{
 };
 
 use super::{
-    editor::{get_editor_instance, set_text_on_editor},
+    editor::{get_editor_instance, set_text_on_editor, get_editor_by_path},
     nbmain::{create_notebook_tab, get_notebook},
 };
 
@@ -55,8 +55,15 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
 fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> ControlFlow<()> {
     let file_path = file_path.unwrap();
-    if let Some(nb_tab_cache) = NotebookTabCache::find_by_path(file_path) {
+    if let Some(nb_tab_cache) = NotebookTabCache::find_by_path(file_path.clone()) {
         notebook.set_current_page(Some(nb_tab_cache.position));
+
+        // focus the Editor if instance exists
+        if let Some(editor) = get_editor_by_path(file_path) {
+            editor.set_has_focus(true);
+            editor.set_is_focus(true);
+        }
+
         return ControlFlow::Break(());
     }
     ControlFlow::Continue(())
