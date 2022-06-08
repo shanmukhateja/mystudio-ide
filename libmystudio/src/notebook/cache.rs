@@ -1,20 +1,10 @@
 use static_init::dynamic;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NotebookTabCache {
     pub file_path: String,
     pub position: u32,
     pub icon_name: String,
-}
-
-impl Clone for NotebookTabCache {
-    fn clone(&self) -> Self {
-        Self {
-            file_path: self.file_path.clone(),
-            position: self.position,
-            icon_name: self.icon_name.clone(),
-        }
-    }
 }
 
 impl NotebookTabCache {
