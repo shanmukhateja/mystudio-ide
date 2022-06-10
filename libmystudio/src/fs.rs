@@ -2,16 +2,15 @@ use std::fs;
 
 use jwalk::WalkDir;
 
-use crate::workspace::Workspace;
+pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
+    let result = WalkDir::new(&root_dir).skip_hidden(true).sort(true);
 
-pub fn read_dir_recursive(root_dir: String) -> Option<jwalk::WalkDirGeneric<((), ())>> {
-    let dir_path_string = Workspace::get_path();
+    let iter = result.into_iter();
 
-    if dir_path_string.is_empty() {
-        return None;
-    }
-
-    Some(WalkDir::new(&root_dir).skip_hidden(true).sort(true))
+    iter
+    .filter(|f| f.is_ok())
+    .map(|f| f.unwrap())
+    .collect()
 }
 
 pub fn save_file_changes(file_absolute_path: String, content: &str) {
