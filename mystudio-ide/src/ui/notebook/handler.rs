@@ -8,7 +8,7 @@ use libmystudio::{
 };
 
 use super::{
-    editor::{get_editor_instance, set_text_on_editor, get_editor_by_path},
+    editor::{get_editor_by_path, get_editor_instance, set_text_on_editor},
     nbmain::{create_notebook_tab, get_notebook},
 };
 

@@ -11,3 +11,5 @@ static_init = "1.0.0"
 sourceview4 = "0.3.0"
 regex="1.5.5"
 libmystudio= { path = "../libmystudio" }
+tempfile = "3.3.0"
+gtk-test="0.15.0"

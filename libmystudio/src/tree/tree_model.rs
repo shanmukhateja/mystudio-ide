@@ -182,9 +182,7 @@ impl RootTreeModel {
         // TODO: find a better way
         files.remove(0);
 
-
         for entry in files.iter() {
-
             let entry_path = entry.path();
 
             let entry_path_str = entry_path.to_str().unwrap();

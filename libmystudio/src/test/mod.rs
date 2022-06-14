@@ -1,10 +1,8 @@
-
 use std::fs::{DirBuilder, File};
 
 use tempfile::tempdir;
 
-use crate::{notebook::cache::NotebookTabCache, fs::read_dir_recursive};
-
+use crate::{fs::read_dir_recursive, notebook::cache::NotebookTabCache};
 
 fn get_mock_cache() -> NotebookTabCache {
     NotebookTabCache {
@@ -34,7 +32,7 @@ fn tab_cache_find() {
 
     // remove the item
     NotebookTabCache::remove(mock_cache.position);
-    
+
     // find again
     let found_cache = locate_cache_item();
 
@@ -42,10 +40,8 @@ fn tab_cache_find() {
     assert!(found_cache.is_none());
 }
 
-
 #[test]
 fn read_dir_recur() {
-
     // create temp dir for unit tests
     let temp_dir = tempdir();
 
@@ -73,10 +69,9 @@ fn read_dir_recur() {
     let result = read_dir_recursive(temp_dir_path);
 
     assert!(!result.is_empty());
-    
+
     let root_dir_resolved = result.first();
     assert!(root_dir_resolved.is_some());
-    
+
     assert_eq!(root_dir_resolved.unwrap().path(), temp_dir.path());
-    
 }
