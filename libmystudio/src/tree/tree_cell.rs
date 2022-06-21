@@ -51,5 +51,5 @@ pub fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
     guess
         .as_str()
         // FIXME: find a better way
-        .replace("/", "-")
+        .replace('/', "-")
 }

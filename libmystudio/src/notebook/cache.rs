@@ -23,7 +23,7 @@ impl NotebookTabCache {
         cache
             .iter()
             .find(|i| i.file_path == file_path)
-            .map(|value| NotebookTabCache::clone(value))
+            .map(NotebookTabCache::clone)
     }
 
     pub fn reset() {
