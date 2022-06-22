@@ -86,4 +86,7 @@ fn close_notebook_tab(widget: &Widget) {
 
     // Also remove from cache
     NotebookTabCache::remove(index);
+
+    // Hide statusbar UI if there are no open tabs 
+    crate::ui::statusbar::reset_and_hide();
 }

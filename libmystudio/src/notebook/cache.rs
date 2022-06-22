@@ -25,9 +25,21 @@ impl NotebookTabCache {
             .find(|i| i.file_path == file_path)
             .map(NotebookTabCache::clone)
     }
+    
+    pub fn find_by_position(position: u32) -> Option<NotebookTabCache> {
+        let cache = NOTEBOOK_TABS_CACHE.read();
+        cache
+            .iter()
+            .find(|i| i.position == position)
+            .map(NotebookTabCache::clone)
+    }
 
     pub fn reset() {
         NOTEBOOK_TABS_CACHE.write().clear();
+    }
+
+    pub fn is_empty() -> bool {
+        NOTEBOOK_TABS_CACHE.read().iter().len() == 0
     }
 }
 

@@ -37,6 +37,9 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
             }
             CommEvents::SpawnOrFocusTab(file_path, content) => {
                 handle_notebook_event(content, file_path);
+
+                // Update status bar indicators
+                ui::statusbar::sync();
             }
             CommEvents::RootTreeItemClicked(tree_model) => {
                 handle_tree_view_event(tree_model, &tx);
