@@ -52,3 +52,23 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
 pub fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
     tx.send(CommEvents::SaveEditorChanges()).ok();
 }
+
+#[cfg(test)]
+mod tests {
+    use gtk::TextBuffer;
+
+    use super::save_file_changes;
+
+    #[test]
+    fn save_file_changes_test() {
+        let root_dir = tempfile::tempdir();
+        assert!(root_dir.is_ok());
+
+        let temp_file = root_dir.unwrap().path().join("index.js");
+
+        let temp_text = "console.log(1);";
+        let text_buffer = TextBuffer::builder().text(temp_text).build();
+
+        save_file_changes(text_buffer, temp_file.to_str().unwrap().into());
+    }
+}

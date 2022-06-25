@@ -2,9 +2,10 @@ use std::cell::RefCell;
 
 use gtk::{
     prelude::{BuilderExtManual, NotebookExtManual},
-    Builder, Notebook, traits::NotebookExt,
+    traits::NotebookExt,
+    Builder, Notebook,
 };
-use libmystudio::{workspace::Workspace, notebook::cache::NotebookTabCache};
+use libmystudio::{notebook::cache::NotebookTabCache, workspace::Workspace};
 
 use self::nbmain::get_notebook;
 
@@ -29,9 +30,7 @@ pub fn init(builder: &Builder) {
 
     // Update open file_path counter and update file encoding indicator on page changed
     notebook.connect_switch_page(|_notebook, _page, position| {
-
         if let Some(tab_cache) = NotebookTabCache::find_by_position(position) {
-
             Workspace::set_open_file_path(Some(tab_cache.file_path));
 
             crate::ui::statusbar::sync();

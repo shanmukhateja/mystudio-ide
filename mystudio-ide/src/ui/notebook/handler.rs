@@ -4,7 +4,8 @@ use gtk::{prelude::NotebookExtManual, traits::WidgetExt};
 
 use libmystudio::{
     notebook::cache::NotebookTabCache,
-    tree::{tree_cell::get_icon_for_name, tree_model::TreeNodeType}, workspace::Workspace,
+    tree::{tree_cell::get_icon_for_name, tree_model::TreeNodeType},
+    workspace::Workspace,
 };
 
 use super::{

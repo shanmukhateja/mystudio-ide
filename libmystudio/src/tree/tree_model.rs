@@ -153,14 +153,13 @@ impl RootTreeModel {
         let store = TreeStore::new(&[RootTreeModel::static_type()]);
 
         let root_dir = Workspace::get_path();
-        let files = read_dir_recursive(root_dir);
+        let mut files = read_dir_recursive(root_dir);
 
-        if files.is_none() {
+        if files.is_empty() {
             return store;
         }
 
-        let mut files = files.unwrap().into_iter();
-        let root_dir = &files.next().unwrap().unwrap();
+        let root_dir = files.first().unwrap();
 
         // Custom Model
         let tree_model_struct = RootTreeModel::new();
@@ -179,9 +178,11 @@ impl RootTreeModel {
             value: String::from(root_dir.file_name().to_str().unwrap()),
         }];
 
-        for (_, entry) in files.enumerate() {
-            let entry = entry.unwrap();
+        // FIX: duplicate Parent node in Tree
+        // TODO: find a better way
+        files.remove(0);
 
+        for entry in files.iter() {
             let entry_path = entry.path();
 
             let entry_path_str = entry_path.to_str().unwrap();

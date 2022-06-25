@@ -37,7 +37,6 @@ fn set_editor_defaut_options(view: &View) {
     );
 }
 
-#[allow(clippy::unnecessary_unwrap)]
 pub fn get_editor_by_path(file_path: String) -> Option<View> {
     let notebook_tab = NotebookTabCache::find_by_path(file_path);
     let page_num = notebook_tab.map(|f| f.position);
@@ -108,5 +107,54 @@ pub fn set_text_on_editor(
             // Reset text content
             editor.buffer().unwrap().set_text("");
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use gtk::Builder;
+    use libmystudio::notebook::cache::NotebookTabCache;
+    use tempfile::tempdir;
+
+    use crate::ui::notebook::{
+        editor::{get_editor_by_path, get_editor_instance},
+        nbmain::{create_notebook_tab, get_notebook},
+    };
+
+    #[test]
+    fn get_editor_by_path_test() {
+        // init Gtk
+        gtk_test::gtk::init().unwrap();
+
+        // Load UI from glade file
+        let glade_src = include_str!("../../../res/ui/main_window.glade");
+        let builder: Builder = Builder::from_string(glade_src);
+
+        // Init Notebook UI for testing
+        crate::ui::notebook::init(&builder);
+
+        // Create mock file
+        let root_dir = tempdir();
+        assert!(root_dir.is_ok());
+        let root_dir = root_dir.unwrap();
+
+        let temp_file = root_dir.path().join("index.js");
+
+        // mock Notebook page
+        let notebook = get_notebook().unwrap();
+        let mock_editor = get_editor_instance();
+        let tab_position = create_notebook_tab(notebook, mock_editor, "title", "icon_name");
+
+        // mock Notebook cache entry
+        let mock_cache = NotebookTabCache {
+            file_path: temp_file.to_str().unwrap().into(),
+            icon_name: "file".into(),
+            position: tab_position,
+        };
+        NotebookTabCache::insert(mock_cache.clone());
+
+        // Verify if editor is available
+        let editor = get_editor_by_path(mock_cache.file_path);
+        assert!(editor.is_some());
     }
 }

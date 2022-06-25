@@ -8,16 +8,14 @@ use encoding_rs::SHIFT_JIS;
 
 use jwalk::WalkDir;
 
-use crate::{encoding::detect_encoding, workspace::Workspace};
+use crate::encoding::detect_encoding;
 
-pub fn read_dir_recursive(root_dir: String) -> Option<jwalk::WalkDirGeneric<((), ())>> {
-    let dir_path_string = Workspace::get_path();
+pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
+    let result = WalkDir::new(&root_dir).skip_hidden(true).sort(true);
 
-    if dir_path_string.is_empty() {
-        return None;
-    }
+    let iter = result.into_iter();
 
-    Some(WalkDir::new(&root_dir).skip_hidden(true).sort(true))
+    iter.filter(|f| f.is_ok()).map(|f| f.unwrap()).collect()
 }
 
 pub fn read_file_contents(input_file: &str) -> Option<String> {
