@@ -1,0 +1,40 @@
+on:
+  push:
+    tags:
+      - "mystudio-ide-*"
+
+name: Build
+
+env:
+  CI_TOKEN: ${{ secrets.CI_TOKEN }}
+
+jobs:
+  build-win:
+    name: build-win
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Get the version
+        run: echo ::set-output name=APP_VERSION::${GITHUB_REF/refs\/tags\//}
+        id: get_version
+
+      - name: Setup docker image
+        run: docker build . -t local
+
+      - name: Build app
+        run: docker run -v $PWD:/src/ -e APP_VERSION=${{  steps.get_version.outputs.APP_VERSION  }} local
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        id: create_release
+        with:
+          tag_name: ${{  steps.get_version.outputs.APP_VERSION  }}
+          token: ${{ env.CI_TOKEN  }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release/${{  steps.get_version.outputs.APP_VERSION  }}-win64.zip

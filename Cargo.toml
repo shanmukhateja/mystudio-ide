@@ -1,6 +1,8 @@
 [workspace]
+members = ["mystudio-ide", "libmystudio"]
 
-members = [
-        "mystudio-ide",
-	"libmystudio",
-]
+
+[workspace.metadata.release]
+allow-branch = ["master"]
+release = false
+publish = false

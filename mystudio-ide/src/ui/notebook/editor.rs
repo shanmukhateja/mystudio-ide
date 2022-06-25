@@ -110,7 +110,6 @@ pub fn set_text_on_editor(
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use gtk::Builder;
@@ -134,7 +133,7 @@ mod tests {
         // Init Notebook UI for testing
         crate::ui::notebook::init(&builder);
 
-        // Create mock file 
+        // Create mock file
         let root_dir = tempdir();
         assert!(root_dir.is_ok());
         let root_dir = root_dir.unwrap();

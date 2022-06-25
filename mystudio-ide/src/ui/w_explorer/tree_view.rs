@@ -8,6 +8,7 @@ use gtk::{
 use crate::comms::CommEvents;
 
 use libmystudio::{
+    fs::read_file_contents,
     tree::{
         tree_cell::set_cell_data,
         tree_model::{RootTreeModel, TreeNodeType},
@@ -82,16 +83,15 @@ pub fn handle_tree_view_event(tree_model: Option<RootTreeModel>, tx: &Sender<Com
 
     let mut content = String::from("The selected item is not a file.");
     if file_path.is_file() {
-        match std::fs::read(file_path) {
-            Ok(data) => {
-                content =
-                    String::from_utf8(data).unwrap_or_else(|_| "File not supported".to_string());
+        match read_file_contents(tree_item_abs_path) {
+            Some(file_content) => {
+                content = file_content;
                 // Update workspace's 'current open file' tracker
                 let open_file_path = file_path.as_os_str().to_str().unwrap();
                 Workspace::set_open_file_path(Some(String::from(open_file_path)));
             }
-            Err(error) => {
-                println!("Unable to read file, {}", error);
+            None => {
+                eprintln!("Unable to read file, '{}'", tree_item_abs_path);
             }
         }
     }

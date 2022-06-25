@@ -5,6 +5,7 @@ use gtk::{prelude::NotebookExtManual, traits::WidgetExt};
 use libmystudio::{
     notebook::cache::NotebookTabCache,
     tree::{tree_cell::get_icon_for_name, tree_model::TreeNodeType},
+    workspace::Workspace,
 };
 
 use super::{
@@ -57,6 +58,9 @@ fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> C
     let file_path = file_path.unwrap();
     if let Some(nb_tab_cache) = NotebookTabCache::find_by_path(file_path.clone()) {
         notebook.set_current_page(Some(nb_tab_cache.position));
+
+        // Update open file path
+        Workspace::set_open_file_path(Some(file_path.clone()));
 
         // focus the Editor if instance exists
         if let Some(editor) = get_editor_by_path(file_path) {

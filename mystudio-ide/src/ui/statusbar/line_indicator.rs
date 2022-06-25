@@ -12,7 +12,10 @@ use regex::Regex;
 
 use super::G_LINE_NUMBER;
 
-use crate::{ui::notebook::editor, G_BUILDER};
+use crate::{
+    ui::notebook::editor::{self, get_editor_by_path},
+    G_BUILDER,
+};
 
 use libmystudio::{
     notebook::editor::{fetch_line_number_by_buffer, jump_to_line_with_editor},
@@ -53,6 +56,26 @@ pub fn setup_listener(view: &View) {
 
     // Move cursor to first line
     jump_to_line_with_editor(view, 1, 1);
+}
+
+pub fn sync() {
+    let file_path = Workspace::get_open_file_path();
+
+    if file_path.is_none() {
+        return;
+    }
+
+    let editor_option = get_editor_by_path(file_path.unwrap());
+
+    match editor_option {
+        Some(editor) => {
+            let buffer = editor.buffer().unwrap().downcast::<Buffer>().unwrap();
+
+            let (line, col) = fetch_line_number_by_buffer(&buffer);
+            update(line, col, true);
+        }
+        None => {}
+    }
 }
 
 pub fn show_goto_dialog() {
@@ -100,6 +123,10 @@ fn reset_and_hide_dialog(input_field: &Entry, dialog: &Dialog) {
     dialog.hide();
 }
 
+pub(super) fn reset_and_hide_indicator() {
+    G_LINE_NUMBER.with(|l| l.borrow().clone().unwrap().set_visible(false));
+}
+
 fn read_user_input_and_process(input_field: &Entry, dialog: &Dialog) {
     let value_gstring = input_field.text();
     let value = value_gstring.as_str().trim();
@@ -141,7 +168,7 @@ fn jump_to_line(line: i32, col: i32) {
     jump_to_line_with_editor(&editor, line, col);
 }
 
-pub fn update(mut line: i32, mut col: i32, should_increment: bool) {
+fn update(mut line: i32, mut col: i32, should_increment: bool) {
     if line == -1 || col == -1 {
         return;
     }

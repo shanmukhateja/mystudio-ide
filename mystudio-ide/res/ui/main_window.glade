@@ -233,6 +233,20 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
             <property name="margin-bottom">6</property>
             <property name="spacing">2</property>
             <child>
+              <object class="GtkLabel" id="label_file_encoding">
+                <property name="can-focus">False</property>
+                <property name="no-show-all">True</property>
+                <property name="label" translatable="yes">UTF-8</property>
+                <property name="justify">center</property>
+                <property name="single-line-mode">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="button_line_col_numbers">
                 <property name="label" translatable="yes">Line 1, Column 1</property>
                 <property name="can-focus">True</property>
@@ -243,7 +257,7 @@ Author: Surya Teja K <shanmukhateja@gmail.com>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
