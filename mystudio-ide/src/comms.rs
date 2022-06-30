@@ -55,17 +55,22 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                         let text_buffer = get_text_buffer_by_path(file_abs_path.clone())
                             .expect("Unable to find editor for open file");
 
-                        // Save to disk
-                        ui::action_row::handler::save_file_changes(
+                        // Show message in Status bar
+                        match ui::action_row::handler::save_file_changes(
                             text_buffer,
                             file_abs_path.clone(),
-                        );
-
-                        // Show message in Status bar
-                        ui::statusbar::message::show_message(format!(
-                            "Saved changes to '{}'",
-                            &file_abs_path
-                        ));
+                        ) {
+                            Ok(_) => {
+                                let message = format!(
+                                    "Saved changes to '{}'",
+                                    &file_abs_path
+                                );
+                                ui::statusbar::message::show_message(message);
+                            },
+                            Err(error_message) => {
+                                ui::statusbar::message::show_message(error_message);
+                            },
+                        }
                     }
                     None => {
                         eprintln!("Unable to write Workspace#open_file_path");
