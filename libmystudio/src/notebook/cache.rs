@@ -46,3 +46,44 @@ impl NotebookTabCache {
 // Holds reference to NotebookTabCache
 #[dynamic]
 static mut NOTEBOOK_TABS_CACHE: Vec<NotebookTabCache> = Vec::new();
+
+#[cfg(test)]
+mod tests {
+    use crate::notebook::cache::NotebookTabCache;
+
+    fn get_mock_cache() -> NotebookTabCache {
+        NotebookTabCache {
+            file_path: "/tmp/1".to_string(),
+            icon_name: "error".to_string(),
+            position: 0,
+        }
+    }
+
+    fn locate_cache_item() -> Option<NotebookTabCache> {
+        let mock_cache = get_mock_cache();
+        NotebookTabCache::find_by_path(mock_cache.file_path)
+    }
+
+    #[test]
+    fn tab_cache_find_test() {
+        let mock_cache = get_mock_cache();
+
+        // insert cache
+        NotebookTabCache::insert(mock_cache.clone());
+
+        // find by file_path
+        let found_cache = locate_cache_item();
+
+        // verify cache is found
+        assert!(found_cache.is_some());
+
+        // remove the item
+        NotebookTabCache::remove(mock_cache.position);
+
+        // find again
+        let found_cache = locate_cache_item();
+
+        // verify cache is none
+        assert!(found_cache.is_none());
+    }
+}
