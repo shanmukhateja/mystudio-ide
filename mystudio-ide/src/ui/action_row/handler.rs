@@ -1,7 +1,7 @@
 use gtk::{
     glib,
     prelude::{FileExt, TextBufferExt},
-    traits::{DialogExt, FileChooserExt, WidgetExt},
+    traits::{FileChooserExt, NativeDialogExt},
     TextBuffer,
 };
 use libmystudio::{fs, workspace::Workspace};
@@ -21,20 +21,14 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
-    let chooser = gtk::FileChooserDialog::builder()
-        .action(gtk::FileChooserAction::SelectFolder)
+    let chooser = gtk::FileChooserNative::builder()
+    .action(gtk::FileChooserAction::SelectFolder)
         .title("Open Folder")
-        .default_width(600)
-        .default_height(400)
-        .focus_on_click(true)
         .filter(&dir_filter)
         .show_hidden(false)
         .build();
 
-    chooser.add_button("Select Folder", gtk::ResponseType::Ok);
-    chooser.add_button("Cancel", gtk::ResponseType::Cancel);
-
-    if let gtk::ResponseType::Ok = chooser.run() {
+    if let gtk::ResponseType::Accept = chooser.run() {
         let chosen_dir = chooser.file().unwrap();
         let dir_path_buf = chosen_dir.path().unwrap();
         let dir_path = dir_path_buf.to_str().unwrap();
@@ -47,6 +41,7 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     };
 
     chooser.hide();
+
 }
 
 pub fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
