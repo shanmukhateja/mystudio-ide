@@ -34,6 +34,13 @@ rm -rf $PACKAGED_DIR
 echo "Copying assets..."
 mkdir -p $PACKAGED_DIR
 
+# bail out if Windows binary doesn't exist
+if [ ! -e target/x86_64-pc-windows-gnu/release/$APP_NAME ]
+then
+echo "File 'target/x86_64-pc-windows-gnu/release/$APP_NAME' not found, aborting"
+exit 1
+fi
+
 # Copy exe
 cp target/x86_64-pc-windows-gnu/release/$APP_NAME $PACKAGED_DIR/$APP_NAME
 
