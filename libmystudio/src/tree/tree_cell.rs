@@ -47,9 +47,24 @@ pub fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
         return "folder".to_owned();
     }
 
+    get_icon_name(filename)
+}
+
+#[cfg(target_os = "linux")]
+fn get_icon_name(filename: &str) -> String {
     let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
     guess
         .as_str()
+        // FIXME: find a better way
+        .replace('/', "-")
+}
+
+#[cfg(target_os = "windows")]
+fn get_icon_name(filename: &str) -> String {
+
+    new_mime_guess::from_path(filename)
+        .first_or_text_plain()
+        .to_string()
         // FIXME: find a better way
         .replace('/', "-")
 }
