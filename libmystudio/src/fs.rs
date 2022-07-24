@@ -1,14 +1,15 @@
 use std::{
-    fs::{self, File},
-    io::Read,
+    fs::File,
+    io::{Read, Write},
 };
 
+use byteorder::{BigEndian, LittleEndian};
 use content_inspector::ContentType;
 
 use encoding_rs::{UTF_16BE, UTF_16LE};
 use jwalk::WalkDir;
 
-use crate::encoding::detect_encoding;
+use crate::encoding::{detect_encoding, encode_to_utf16};
 
 pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
     let result = WalkDir::new(&root_dir).skip_hidden(true).sort(true);
@@ -51,28 +52,43 @@ pub fn read_file_contents(input_file: &str) -> Option<String> {
 
 pub fn save_file_changes(file_absolute_path: String, content: &str) -> Result<(), String> {
     let content_type = detect_encoding(&file_absolute_path);
-    println!(
-        "file abs: {}  detected encoding: {}",
-        &file_absolute_path, &content_type
-    );
-    if content_type != ContentType::UTF_8 && content_type != ContentType::UTF_8_BOM {
-        return Err(format!(
-            "Write support for '{}' encoding is unavailable.",
-            &content_type
-        ));
-    }
 
-    fs::write(file_absolute_path, content).ok();
-    Ok(())
+    let mut buffer: Vec<u8> = vec![];
+
+    match content_type {
+        ContentType::UTF_8 | ContentType::UTF_8_BOM => {
+            buffer = content.as_bytes().into();
+        }
+        ContentType::UTF_16LE => {
+            if let Some(buf) = encode_to_utf16::<LittleEndian>(content.into(), content_type) {
+                buffer = buf;
+            }
+        }
+        ContentType::UTF_16BE => {
+            if let Some(buf) = encode_to_utf16::<BigEndian>(content.into(), content_type) {
+                buffer = buf;
+            }
+        }
+        ContentType::BINARY | ContentType::UTF_32LE | ContentType::UTF_32BE => {
+            return Err(format!(
+                "Write support for '{}' encoding is unavailable.",
+                &content_type
+            ));
+        }
+    };
+
+    let mut file = File::create(file_absolute_path).map_err(|err| err.to_string())?;
+    file.write_all(&buffer).map_err(|err| err.to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use std::fs::{canonicalize, DirBuilder, File};
 
+    use content_inspector::ContentType;
     use tempfile::tempdir;
 
-    use crate::fs::read_dir_recursive;
+    use crate::{encoding::detect_encoding, fs::read_dir_recursive};
 
     use super::save_file_changes;
 
@@ -95,11 +111,17 @@ mod tests {
         assert!(text_file_path.is_ok());
 
         let text_file_path = text_file_path.unwrap();
+        let text_file_path_str = text_file_path.to_str().unwrap();
 
         let text_file = File::open(&text_file_path);
         assert!(text_file.is_ok());
 
-        assert!(save_file_changes(text_file_path.to_str().unwrap().into(), "").is_err());
+        assert!(save_file_changes(text_file_path_str.into(), "foo").is_ok());
+
+        assert_eq!(
+            detect_encoding(text_file_path_str),
+            ContentType::UTF_16LE
+        );
     }
 
     #[test]
