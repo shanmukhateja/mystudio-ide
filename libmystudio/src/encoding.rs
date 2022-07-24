@@ -7,11 +7,6 @@ pub fn detect_encoding(input_file: &str) -> ContentType {
     inspect(&data)
 }
 
-pub fn detect_encoding_str(input_file: &str) -> &str {
-    match detect_encoding(input_file) {
-        ContentType::BINARY => "Unsupported",
-        ContentType::UTF_8 | ContentType::UTF_8_BOM => "UTF-8",
-        ContentType::UTF_16LE | ContentType::UTF_16BE => "UTF-16",
-        ContentType::UTF_32LE | ContentType::UTF_32BE => "UTF-32",
-    }
+pub fn detect_encoding_str(input_file: &str) -> String {
+    detect_encoding(input_file).to_string()
 }

@@ -30,9 +30,9 @@ pub(super) fn sync() {
     }
 
     let file_path_str = open_file_path.unwrap();
-    let encoding: &str = detect_encoding_str(file_path_str.as_str());
+    let encoding = detect_encoding_str(file_path_str.as_str());
 
-    indicator.set_label(encoding);
+    indicator.set_label(encoding.as_str());
 }
 
 pub(super) fn reset_and_hide_indicator() {
