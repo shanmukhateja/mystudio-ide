@@ -2,13 +2,16 @@ use std::path::Path;
 
 use gtk::{
     glib::{self, Sender},
-    prelude::{BuilderExtManual, ObjectExt, ToValue, TreeModelExt, TreeSelectionExt, TreeViewExt},
+    prelude::{
+        BuilderExtManual, Cast, ObjectExt, ToValue, TreeModelExt, TreeSelectionExt, TreeViewExt
+    },
+    TreeStore,
 };
 
 use crate::comms::CommEvents;
 
 use libmystudio::{
-    fs::read_file_contents,
+    fs::{read_file_contents, read_dir_recursive},
     tree::{
         tree_cell::set_cell_data,
         tree_model::{RootTreeModel, TreeNodeType},
@@ -22,6 +25,40 @@ pub fn setup_tree(builder: &gtk::Builder, tx: glib::Sender<CommEvents>) {
     G_TREE.with(|tree| {
         let tree_ref = tree.borrow();
         let tree = tree_ref.as_ref().unwrap();
+
+        tree.connect_row_expanded(|tree, iter, _path| {
+            let model = tree.model().unwrap();
+            let store = model.downcast_ref::<TreeStore>().unwrap();
+
+            let data_model = model.value(iter, 0).get::<RootTreeModel>().unwrap();
+            let item_type = data_model
+                .property_value("item-type")
+                .get::<TreeNodeType>()
+                .unwrap();
+            let abs_path = data_model.property_value("abs-path").get::<String>().unwrap();
+
+            // Check if the filler node exists (fix for duplicates)
+            let is_filler_present = store.iter_children(Some(iter)).filter(|child_iter| {
+                // Find data model for given iter
+                let data_model = model.value(child_iter, 0).get::<RootTreeModel>().unwrap();
+                let filename = data_model.property_value("file-name")
+                .get::<String>()
+                .unwrap();
+
+                filename == "filler"
+            })
+            .is_some();
+
+            if item_type == TreeNodeType::Directory && is_filler_present {
+                // 1. Remove filler row on expand
+                RootTreeModel::clear_row(iter, store);
+
+                // 2. read fs and add nodes as children to `iter`
+                let files = read_dir_recursive(abs_path);
+                RootTreeModel::construct_nodes(files, store, Some(iter));
+                tree.expand_row(_path, false);
+            }
+        });
 
         tree.selection().connect_changed(move |selected_data| {
             let selected_data = selected_data.selected();

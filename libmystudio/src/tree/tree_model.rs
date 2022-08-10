@@ -1,12 +1,14 @@
 use gtk::{
     prelude::{ObjectExt, StaticType, TreeStoreExtManual},
-    traits::{TreeSelectionExt, TreeViewExt},
+    traits::{TreeModelExt, TreeSelectionExt, TreeStoreExt, TreeViewExt},
     TreeIter, TreeStore,
 };
 
 use std::cell::RefCell;
 
 use gtk::glib;
+
+use jwalk::DirEntry;
 
 use crate::{fs::read_dir_recursive, workspace::Workspace};
 pub struct TreeInfo {
@@ -153,12 +155,19 @@ impl RootTreeModel {
         let store = TreeStore::new(&[RootTreeModel::static_type()]);
 
         let root_dir = Workspace::get_path();
-        let mut files = read_dir_recursive(root_dir);
+        let files = read_dir_recursive(root_dir);
 
         if files.is_empty() {
             return store;
         }
 
+        Self::construct_nodes(files, &store, None);
+
+        store
+    }
+
+    pub fn construct_nodes(mut files: Vec<DirEntry<((), ())>>, store: &TreeStore, selected_iter: Option<&TreeIter>) {
+        
         // Remove and return first item of files
         let root_dir = files.remove(0);
 
@@ -171,7 +180,11 @@ impl RootTreeModel {
         );
         tree_model_struct.set_property("item-type", &TreeNodeType::Workspace);
 
-        let root_iter = store.insert_with_values(None, Some(1_u32), &[(0_u32, &tree_model_struct)]);
+        let root_iter = if let Some(iter) = selected_iter {
+            iter.to_owned()
+        } else {
+            store.insert_with_values(None, Some(1_u32), &[(0_u32, &tree_model_struct)])
+        };
 
         // Cache tree_iter with file name
         let mut tree_info = vec![TreeInfo {
@@ -208,14 +221,32 @@ impl RootTreeModel {
             let m_iter =
                 store.insert_with_values(Some(parent_iter), None, &[(0, &tree_model_struct)]);
 
+            // Add dummy child to Directory nodes so expand option is visible
+            if item_type == &TreeNodeType::Directory {
+                Self::add_filler_row(&m_iter, store);
+            }
             // Save to info list
             tree_info.push(TreeInfo {
                 iter: m_iter,
                 value: String::from(entry_path_str),
             });
         }
+    }
 
-        store
+    pub fn add_filler_row(iter: &TreeIter, store: &TreeStore) {
+        let value = RootTreeModel::new();
+        value.set_property("file-name", "filler");
+        value.set_property("item-type", TreeNodeType::File);
+        store.insert_with_values(Some(iter), None, &[(0, &value)]);
+    }
+
+    /**
+     * This function deletes all children nodes for a given TreeIter
+     */
+    pub fn clear_row(iter: &TreeIter, store: &TreeStore) {
+        store.iter_children(Some(iter)).into_iter().for_each(|x| {
+            store.remove(&x);
+        });
     }
 
     pub fn update_tree_model(tree: &gtk::TreeView) {
