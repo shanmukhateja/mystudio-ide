@@ -159,7 +159,8 @@ impl RootTreeModel {
             return store;
         }
 
-        let root_dir = files.first().unwrap();
+        // Remove and return first item of files
+        let root_dir = files.remove(0);
 
         // Custom Model
         let tree_model_struct = RootTreeModel::new();
@@ -177,10 +178,6 @@ impl RootTreeModel {
             iter: root_iter,
             value: String::from(root_dir.file_name().to_str().unwrap()),
         }];
-
-        // FIX: duplicate Parent node in Tree
-        // TODO: find a better way
-        files.remove(0);
 
         for entry in files.iter() {
             let entry_path = entry.path();
