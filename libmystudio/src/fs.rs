@@ -12,7 +12,7 @@ use jwalk::WalkDir;
 use crate::encoding::{detect_encoding, encode_to_utf16};
 
 pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
-    let result = WalkDir::new(&root_dir).skip_hidden(true).sort(true).max_depth(1);
+    let result = WalkDir::new(&root_dir).skip_hidden(false).sort(true).max_depth(1);
 
     let iter = result.into_iter();
 
