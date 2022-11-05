@@ -2,11 +2,11 @@ use gtk::{
     glib,
     prelude::{Cast, NotebookExtManual},
     traits::{BoxExt, ButtonExt, ContainerExt, WidgetExt},
-    Adjustment, IconSize, Notebook, Orientation, ReliefStyle, Widget,
+    IconSize, Notebook, Orientation, ReliefStyle, Widget,
 };
 use libmystudio::notebook::cache::NotebookTabCache;
 
-use super::G_NOTEBOOK;
+use super::{G_NOTEBOOK, editor::enable_scroll_for_sourceview};
 
 pub fn get_notebook() -> Option<Notebook> {
     G_NOTEBOOK.with(move |notebook| notebook.borrow().clone())
@@ -55,26 +55,6 @@ pub fn create_notebook_tab(
     editor.set_is_focus(true);
 
     index
-}
-
-/**
- * Wrap a given `sourceview::View` widget inside `ScrolledWindow` & `Viewport`
- */
-fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
-    // ScrolledWindow to enable scrollable content
-    let my_scroll_window =
-        gtk::ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
-    let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
-
-    // Every ScrolledWindow needs a Viewport
-    let my_viewport =
-        gtk::Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
-
-    // Add sourceview to `Viewport` and `Viewport` to `ScrolledWindow`
-    my_viewport.add(&editor_widget);
-    my_scroll_window.add(&my_viewport);
-
-    my_scroll_window_widget
 }
 
 fn close_notebook_tab(widget: &Widget) {

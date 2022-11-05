@@ -7,7 +7,7 @@ use gtk::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
         GtkWindowExt, WidgetExt,
     },
-    Application, ApplicationWindow, Builder,
+    Application, ApplicationWindow, Builder, traits::CssProviderExt, gdk::Screen, StyleContext,
 };
 use libmystudio::workspace::Workspace;
 
@@ -22,7 +22,7 @@ thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::n
 fn build_ui(app: &Application) {
     G_WINDOW.with(|window| {
         // Load UI from glade file
-        let glade_src = include_str!("../res/ui/main_window.glade");
+        let glade_src = include_str!("./res/ui/main_window.glade");
         let builder: Builder = Builder::from_string(glade_src);
 
         // Builder
@@ -34,6 +34,22 @@ fn build_ui(app: &Application) {
         *window.borrow_mut() = builder.object("main_window");
         assert!(window.borrow().as_ref().is_some());
         window.borrow().as_ref().unwrap().set_application(Some(app));
+
+        // Init styling
+        let css_provider = gtk::CssProvider::new();
+
+        let data = include_str!("./res/styles.css").as_bytes();
+
+        css_provider
+            .load_from_data(data)
+            .ok();
+
+        let screen = Screen::default().expect("Unable to find screen for css_provider");
+        StyleContext::add_provider_for_screen(
+            &screen,
+            &css_provider,
+            gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+        );
 
         // Channels to communicate with UI widgets
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
@@ -48,7 +64,10 @@ fn build_ui(app: &Application) {
         ui::notebook::init(&builder);
 
         // Status bar
-        crate::ui::statusbar::init();
+        ui::statusbar::init();
+
+        // Find in files
+        ui::features::find_in_files::init(&builder);
 
         // Listen to UI changes
         comms::handle_comm_event(tx, rx);

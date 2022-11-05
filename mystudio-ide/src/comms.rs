@@ -45,7 +45,7 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                 handle_tree_view_event(tree_model, &tx);
             }
             CommEvents::UpdateRootTextViewContent(file_path, content) => {
-                set_text_on_editor(None, file_path, content);
+                set_text_on_editor(None, file_path, content, false);
             }
             CommEvents::SaveEditorChanges() => {
                 let file_absolute_path = Workspace::get_open_file_path();

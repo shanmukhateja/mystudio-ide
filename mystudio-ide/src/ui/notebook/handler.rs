@@ -38,7 +38,7 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
     // Add content to child of tab
     let editor = get_editor_instance();
-    set_text_on_editor(Some(editor.clone()), Some(file_path.clone()), content);
+    set_text_on_editor(Some(editor.clone()), Some(file_path.clone()), content, true);
 
     // create new tab
     let icon_name = get_icon_for_name(&file_name, TreeNodeType::File);
