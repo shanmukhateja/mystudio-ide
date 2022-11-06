@@ -2,7 +2,7 @@ textview {
   font-family: Monospace;
 }
 
-#label_find_in_files {
+#label_find_in_files_path {
   background: #eee;
   font-weight: 300;
   font-size: 15px;

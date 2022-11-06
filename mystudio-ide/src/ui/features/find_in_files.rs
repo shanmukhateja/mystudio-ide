@@ -119,7 +119,7 @@ fn update_search_results(results: Vec<SearchResult>) {
             result.offset_start + 1
         );
         let label_path = Label::new(Some(&file_path_with_line_number));
-        label_path.set_widget_name("label_find_in_files");
+        label_path.set_widget_name("label_find_in_files_path");
         label_path.set_xalign(0f32);
 
         // SourceView widget
