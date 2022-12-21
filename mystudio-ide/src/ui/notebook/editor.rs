@@ -1,7 +1,7 @@
 use gtk::{
     prelude::{Cast, ContainerExt, NotebookExtManual, ScrolledWindowExt},
     traits::{TextBufferExt, TextViewExt},
-    ScrolledWindow, Viewport, Widget, Adjustment,
+    Adjustment, ScrolledWindow, Viewport, Widget,
 };
 use libmystudio::notebook::cache::NotebookTabCache;
 use sourceview4::{
@@ -107,22 +107,19 @@ pub fn set_text_on_editor(
 pub fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
     // ScrolledWindow to enable scrollable content
     let my_scroll_window =
-        gtk::ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
+        ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
     let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
 
     // Every ScrolledWindow needs a Viewport
-    let my_viewport =
-        gtk::Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
-
+    let my_viewport = Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
     // Add sourceview to `Viewport` and `Viewport` to `ScrolledWindow`
     my_viewport.add(&editor_widget);
-    my_scroll_window.add(&my_viewport);
 
+    my_scroll_window.add(&my_viewport);
     my_scroll_window.set_propagate_natural_height(true);
 
     my_scroll_window_widget
 }
-
 
 #[cfg(test)]
 mod tests {

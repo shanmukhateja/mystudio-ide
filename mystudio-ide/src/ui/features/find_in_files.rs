@@ -4,11 +4,10 @@ use gtk::{
     gdk::keys::constants as key_constants,
     prelude::{BuilderExtManual, Cast},
     traits::{ContainerExt, EntryExt, LabelExt, TextBufferExt, TextViewExt, WidgetExt},
-    Dialog, Entry, Label, ListBox, ListBoxRow, Widget,
+    Dialog, Entry, Label, ListBox, ListBoxRow, Widget, Box,
 };
 use libmystudio::{
     fs::read_file_contents,
-    notebook::editor::jump_to_line_with_editor,
     workspace::{SearchResult, Workspace},
 };
 
@@ -19,6 +18,9 @@ use crate::ui::notebook::editor::{
 thread_local! { pub static G_FIND_FILES: RefCell<Option<Dialog>> = RefCell::new(None) }
 thread_local! { pub static G_FIND_FILES_INPUT: RefCell<Option<Entry>> = RefCell::new(None) }
 thread_local! { pub static G_FIND_FILES_LISTBOX: RefCell<Option<ListBox>> = RefCell::new(None) }
+thread_local! { pub static G_FIND_FILES_LISTBOX_PLACEHOLDER: RefCell<Option<Label>> = RefCell::new(None) }
+
+const PLACEHOLDER_TEXT_NO_RESULTS: &str = "No results found";
 
 pub fn init(builder: &gtk::Builder) {
     G_FIND_FILES.with(|find_files| {
@@ -39,6 +41,12 @@ pub fn init(builder: &gtk::Builder) {
         assert!(find_files_listbox.is_some());
     });
 
+    G_FIND_FILES_LISTBOX_PLACEHOLDER.with(|find_files| {
+        *find_files.borrow_mut() = builder.object("label_find_in_files_placeholder");
+        let find_files_listbox_placeholder = find_files.borrow().clone();
+        assert!(find_files_listbox_placeholder.is_some());
+    });
+
     // Init listener
 
     G_FIND_FILES_INPUT.with(|find_files| {
@@ -57,11 +65,11 @@ pub fn init(builder: &gtk::Builder) {
 
             match search_result {
                 Ok(results) => {
-                    update_search_results(results);
+                    update_search_results(results, "".into());
                 }
                 Err(error) => {
                     eprintln!("Search error: {}", error);
-                    update_search_results(vec![]);
+                    update_search_results(vec![], format!("Search error: {}", error));
                 }
             }
 
@@ -92,14 +100,21 @@ fn hide_dialog() {
     dialog.hide();
 }
 
-fn update_search_results(results: Vec<SearchResult>) {
+fn update_search_results(results: Vec<SearchResult>, placeholder_text: String) {
     let dialog = G_FIND_FILES.with(|l| l.borrow().clone().unwrap());
     let listbox = G_FIND_FILES_LISTBOX.with(|l| l.borrow().clone().unwrap());
     let input = G_FIND_FILES_INPUT.with(|i| i.borrow().clone().unwrap());
+    let placeholder =  G_FIND_FILES_LISTBOX_PLACEHOLDER.with(|p| p.borrow().clone().unwrap());
 
     // Clear previous entries
     if input.text().is_empty() || !listbox.children().is_empty() {
         reset_listbox();
+    }
+
+    if !placeholder_text.is_empty() {
+        placeholder.set_text(placeholder_text.as_str());
+    } else if results.is_empty() {
+        placeholder.set_text(PLACEHOLDER_TEXT_NO_RESULTS);
     }
 
     for result in results {
@@ -109,7 +124,7 @@ fn update_search_results(results: Vec<SearchResult>) {
         let row = ListBoxRow::new();
         row.set_widget_name("row_find_in_files_results");
         row.set_height_request(200);
-        let mybox = gtk::Box::new(gtk::Orientation::Vertical, 7);
+        let mybox = Box::new(gtk::Orientation::Vertical, 7);
 
         // Label for file path & line number
         let file_path_with_line_number = format!(
@@ -130,7 +145,7 @@ fn update_search_results(results: Vec<SearchResult>) {
             Some(editor.clone()),
             Some(result_path_str.to_string()),
             Some(result_file_contents),
-            false
+            false,
         );
 
         // ScrolledWindow for editor
@@ -144,7 +159,6 @@ fn update_search_results(results: Vec<SearchResult>) {
         let start = buffer.iter_at_line_offset(line_number - 1, result.offset_start);
         let end = buffer.iter_at_line_offset(line_number - 1, result.offset_end);
 
-        jump_to_line_with_editor(&editor, line_number, result.offset_start);
         buffer.select_range(&end, &start);
 
         mybox.add(&label_path);

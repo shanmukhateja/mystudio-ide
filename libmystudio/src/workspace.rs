@@ -16,7 +16,7 @@ use jwalk::WalkDir;
 #[dynamic]
 static WORKSPACE_PATH: ArcSwap<Workspace> = ArcSwap::new(Arc::new(Workspace::new()));
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SearchResult {
     pub line_number: i32,
     pub text: String,

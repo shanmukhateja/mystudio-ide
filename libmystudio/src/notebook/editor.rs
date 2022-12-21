@@ -1,14 +1,9 @@
 use gtk::traits::{TextBufferExt, TextViewExt, WidgetExt};
 use sourceview4::{Buffer, View};
 
-pub fn jump_to_line_with_editor(editor: &View, mut line: i32, mut col: i32) {
-    // FIXME: Find a better way.
-    if line == 0 {
-        line = 1;
-    }
-    if col == 0 {
-        col = 1;
-    }
+pub fn jump_to_line_with_editor(editor: &View, line: i32, col: i32) {
+    let line = line.clamp(1, line);
+    let col = col.clamp(1, col);
 
     let buffer = editor.buffer().unwrap();
 
