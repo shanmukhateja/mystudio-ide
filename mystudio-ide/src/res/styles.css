@@ -1,0 +1,22 @@
+textview {
+  font-family: Monospace;
+}
+
+#label_find_in_files_path {
+  background: #eee;
+  font-weight: 300;
+  font-size: 15px;
+  color: black;
+}
+
+#row_find_in_files_results {
+  background: white;
+}
+
+#row_find_in_files_results:selected {
+  border: solid 1px black;
+}
+
+#row_find_in_files_results:selected > #label_find_in_files {
+ color: black;
+}

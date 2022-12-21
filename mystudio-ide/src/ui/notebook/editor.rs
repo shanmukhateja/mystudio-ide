@@ -1,7 +1,7 @@
 use gtk::{
-    prelude::{Cast, ContainerExt, NotebookExtManual},
-    traits::{CssProviderExt, TextBufferExt, TextViewExt},
-    ScrolledWindow, Viewport,
+    prelude::{Cast, ContainerExt, NotebookExtManual, ScrolledWindowExt},
+    traits::{TextBufferExt, TextViewExt},
+    Adjustment, ScrolledWindow, Viewport, Widget,
 };
 use libmystudio::notebook::cache::NotebookTabCache;
 use sourceview4::{
@@ -23,18 +23,6 @@ fn set_editor_defaut_options(view: &View) {
     view.set_show_line_numbers(true);
     view.set_auto_indent(true);
     view.set_highlight_current_line(true);
-
-    let css_provider = gtk::CssProvider::new();
-    css_provider
-        .load_from_data("textview { font-family: Monospace }".as_bytes())
-        .ok();
-
-    let screen = gtk::gdk::Screen::default().expect("Unable to find screen for css_provider");
-    gtk::StyleContext::add_provider_for_screen(
-        &screen,
-        &css_provider,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
 }
 
 pub fn get_editor_by_path(file_path: String) -> Option<View> {
@@ -75,6 +63,7 @@ pub fn set_text_on_editor(
     mut editor: Option<View>,
     file_path: Option<String>,
     content: Option<String>,
+    update_line_indicator: bool
 ) {
     if editor.is_none() {
         editor = Some(get_editor_instance());
@@ -101,13 +90,35 @@ pub fn set_text_on_editor(
             editor.set_buffer(Some(&source_buffer));
 
             // Update line indicator as per cursor movements
-            crate::ui::statusbar::line_indicator::setup_listener(&editor);
+            if update_line_indicator {
+                crate::ui::statusbar::line_indicator::setup_listener(&editor);
+            }
         }
         None => {
             // Reset text content
             editor.buffer().unwrap().set_text("");
         }
     }
+}
+
+/**
+ * Wrap a given `sourceview::View` widget inside `ScrolledWindow` & `Viewport`
+ */
+pub fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
+    // ScrolledWindow to enable scrollable content
+    let my_scroll_window =
+        ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
+    let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
+
+    // Every ScrolledWindow needs a Viewport
+    let my_viewport = Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
+    // Add sourceview to `Viewport` and `Viewport` to `ScrolledWindow`
+    my_viewport.add(&editor_widget);
+
+    my_scroll_window.add(&my_viewport);
+    my_scroll_window.set_propagate_natural_height(true);
+
+    my_scroll_window_widget
 }
 
 #[cfg(test)]
@@ -127,7 +138,7 @@ mod tests {
         gtk_test::gtk::init().unwrap();
 
         // Load UI from glade file
-        let glade_src = include_str!("../../../res/ui/main_window.glade");
+        let glade_src = include_str!("../../res/ui/main_window.glade");
         let builder: Builder = Builder::from_string(glade_src);
 
         // Init Notebook UI for testing
