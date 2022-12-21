@@ -814,7 +814,7 @@ checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
 name = "mystudio-ide"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "gtk",
  "gtk-test",
