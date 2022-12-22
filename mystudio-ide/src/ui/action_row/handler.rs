@@ -8,7 +8,10 @@ use libmystudio::{fs, workspace::Workspace};
 
 use crate::comms::CommEvents;
 
-pub fn save_file_changes(text_buffer: TextBuffer, file_absolute_path: String) -> Result<(), String> {
+pub fn save_file_changes(
+    text_buffer: TextBuffer,
+    file_absolute_path: String,
+) -> Result<(), String> {
     let content_gstring = text_buffer
         .text(&text_buffer.start_iter(), &text_buffer.end_iter(), true)
         .unwrap();
@@ -22,7 +25,7 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     dir_filter.add_mime_type("inode/directory");
 
     let chooser = gtk::FileChooserNative::builder()
-    .action(gtk::FileChooserAction::SelectFolder)
+        .action(gtk::FileChooserAction::SelectFolder)
         .title("Open Folder")
         .filter(&dir_filter)
         .show_hidden(false)
@@ -41,7 +44,6 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     };
 
     chooser.hide();
-
 }
 
 pub fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {

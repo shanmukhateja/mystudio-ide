@@ -48,15 +48,14 @@ pub fn get_icon_for_name(filename: &str, icon_type: TreeNodeType) -> String {
     }
 
     get_icon_name(filename)
+    // FIXME: find a better way
+    .replace('/', "-")
 }
 
 #[cfg(target_os = "linux")]
 fn get_icon_name(filename: &str) -> String {
     let (guess, _) = gtk::gio::content_type_guess(Some(filename), &[]);
-    guess
-        .as_str()
-        // FIXME: find a better way
-        .replace('/', "-")
+    guess.to_string()
 }
 
 #[cfg(target_os = "windows")]
@@ -64,15 +63,17 @@ fn get_icon_name(filename: &str) -> String {
     new_mime_guess::from_path(filename)
         .first_or_text_plain()
         .to_string()
-        // FIXME: find a better way
-        .replace('/', "-")
 }
 
 #[cfg(test)]
 mod tests {
     use crate::tree::tree_cell::get_icon_for_name;
 
-    fn test_icon_name_mime<'a>(name: &'a str, mime: &'a str, fallback_mime: Option<&'a str>) -> bool {
+    fn test_icon_name_mime<'a>(
+        name: &'a str,
+        mime: &'a str,
+        fallback_mime: Option<&'a str>,
+    ) -> bool {
         let fetched_mime = get_icon_for_name(name, crate::tree::tree_model::TreeNodeType::File);
 
         if let Some(fallback) = fallback_mime {

@@ -67,14 +67,11 @@ pub fn sync() {
 
     let editor_option = get_editor_by_path(file_path.unwrap());
 
-    match editor_option {
-        Some(editor) => {
-            let buffer = editor.buffer().unwrap().downcast::<Buffer>().unwrap();
+    if let Some(editor) = editor_option {
+        let buffer = editor.buffer().unwrap().downcast::<Buffer>().unwrap();
 
-            let (line, col) = fetch_line_number_by_buffer(&buffer);
-            update(line, col, true);
-        }
-        None => {}
+        let (line, col) = fetch_line_number_by_buffer(&buffer);
+        update(line, col, true);
     }
 }
 

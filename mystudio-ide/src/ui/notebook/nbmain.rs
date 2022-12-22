@@ -6,7 +6,7 @@ use gtk::{
 };
 use libmystudio::notebook::cache::NotebookTabCache;
 
-use super::{G_NOTEBOOK, editor::enable_scroll_for_sourceview};
+use super::{editor::enable_scroll_for_sourceview, G_NOTEBOOK};
 
 pub fn get_notebook() -> Option<Notebook> {
     G_NOTEBOOK.with(move |notebook| notebook.borrow().clone())

@@ -63,7 +63,7 @@ pub fn set_text_on_editor(
     mut editor: Option<View>,
     file_path: Option<String>,
     content: Option<String>,
-    update_line_indicator: bool
+    update_line_indicator: bool,
 ) {
     if editor.is_none() {
         editor = Some(get_editor_instance());

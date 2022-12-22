@@ -8,7 +8,6 @@ static UTF16_BYTE_ORDER_MARKS: &[(&[u8], ContentType)] = &[
     (&[0xFE, 0xFF], ContentType::UTF_16BE),
 ];
 
-
 pub fn detect_encoding(input_file: &str) -> ContentType {
     let data = read(input_file).unwrap_or_default();
     inspect(&data)
@@ -17,7 +16,6 @@ pub fn detect_encoding(input_file: &str) -> ContentType {
 pub fn detect_encoding_str(input_file: &str) -> String {
     detect_encoding(input_file).to_string()
 }
-
 
 /**
  * This function is inspired from:

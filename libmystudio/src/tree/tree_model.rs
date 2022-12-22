@@ -166,8 +166,11 @@ impl RootTreeModel {
         store
     }
 
-    pub fn construct_nodes(mut files: Vec<DirEntry<((), ())>>, store: &TreeStore, selected_iter: Option<&TreeIter>) {
-        
+    pub fn construct_nodes(
+        mut files: Vec<DirEntry<((), ())>>,
+        store: &TreeStore,
+        selected_iter: Option<&TreeIter>,
+    ) {
         // Remove and return first item of files
         let root_dir = files.remove(0);
 

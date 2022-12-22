@@ -12,11 +12,14 @@ use jwalk::WalkDir;
 use crate::encoding::{detect_encoding, encode_to_utf16};
 
 pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
-    let result = WalkDir::new(&root_dir).skip_hidden(false).sort(true).max_depth(1);
+    let result = WalkDir::new(&root_dir)
+        .skip_hidden(false)
+        .sort(true)
+        .max_depth(1);
 
     let iter = result.into_iter();
 
-    iter.filter(|f| f.is_ok()).map(|f| f.unwrap()).collect()
+    iter.filter_map(|f| f.ok()).collect()
 }
 
 pub fn read_file_contents(input_file: &str) -> Option<String> {
@@ -118,10 +121,7 @@ mod tests {
 
         assert!(save_file_changes(text_file_path_str.into(), "foo").is_ok());
 
-        assert_eq!(
-            detect_encoding(text_file_path_str),
-            ContentType::UTF_16LE
-        );
+        assert_eq!(detect_encoding(text_file_path_str), ContentType::UTF_16LE);
     }
 
     #[test]

@@ -61,15 +61,12 @@ pub fn handle_comm_event(tx: Sender<CommEvents>, rx: Receiver<CommEvents>) {
                             file_abs_path.clone(),
                         ) {
                             Ok(_) => {
-                                let message = format!(
-                                    "Saved changes to '{}'",
-                                    &file_abs_path
-                                );
+                                let message = format!("Saved changes to '{}'", &file_abs_path);
                                 ui::statusbar::message::show_message(message);
-                            },
+                            }
                             Err(error_message) => {
                                 ui::statusbar::message::show_message(error_message);
-                            },
+                            }
                         }
                     }
                     None => {

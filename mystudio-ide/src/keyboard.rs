@@ -6,7 +6,8 @@ use crate::{
     comms::CommEvents,
     ui::{
         action_row::handler::{on_open_dir_clicked, on_save_changes_clicked},
-        statusbar::line_indicator::show_goto_dialog, features,
+        features,
+        statusbar::line_indicator::show_goto_dialog,
     },
 };
 
@@ -77,12 +78,17 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
     let (accel_key, accel_mods) = gtk::accelerator_parse("<Ctrl><Shift>F");
     let accel_group = gtk::AccelGroup::new();
 
-    accel_group.connect_accel_group(accel_key, accel_mods, AccelFlags::VISIBLE, move |_, _, _, _| {
-        if !Workspace::get_path().is_empty() {
-            features::find_in_files::show_dialog();
-        }
-        true
-    });
+    accel_group.connect_accel_group(
+        accel_key,
+        accel_mods,
+        AccelFlags::VISIBLE,
+        move |_, _, _, _| {
+            if !Workspace::get_path().is_empty() {
+                features::find_in_files::show_dialog();
+            }
+            true
+        },
+    );
 
     window.add_accel_group(&accel_group);
 }

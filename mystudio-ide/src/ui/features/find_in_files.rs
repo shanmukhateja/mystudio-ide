@@ -4,7 +4,7 @@ use gtk::{
     gdk::keys::constants as key_constants,
     prelude::{BuilderExtManual, Cast},
     traits::{ContainerExt, EntryExt, LabelExt, TextBufferExt, TextViewExt, WidgetExt},
-    Dialog, Entry, Label, ListBox, ListBoxRow, Widget, Box,
+    Box, Dialog, Entry, Label, ListBox, ListBoxRow, Widget,
 };
 use libmystudio::{
     fs::read_file_contents,
@@ -104,7 +104,7 @@ fn update_search_results(results: Vec<SearchResult>, placeholder_text: String) {
     let dialog = G_FIND_FILES.with(|l| l.borrow().clone().unwrap());
     let listbox = G_FIND_FILES_LISTBOX.with(|l| l.borrow().clone().unwrap());
     let input = G_FIND_FILES_INPUT.with(|i| i.borrow().clone().unwrap());
-    let placeholder =  G_FIND_FILES_LISTBOX_PLACEHOLDER.with(|p| p.borrow().clone().unwrap());
+    let placeholder = G_FIND_FILES_LISTBOX_PLACEHOLDER.with(|p| p.borrow().clone().unwrap());
 
     // Clear previous entries
     if input.text().is_empty() || !listbox.children().is_empty() {

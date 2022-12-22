@@ -1,13 +1,15 @@
 use std::{cell::RefCell, path::Path};
 
 use gtk::{
+    gdk::Screen,
     gio::ApplicationFlags,
     glib,
     prelude::{
         ApplicationCommandLineExt, ApplicationExt, ApplicationExtManual, BuilderExtManual,
         GtkWindowExt, WidgetExt,
     },
-    Application, ApplicationWindow, Builder, traits::CssProviderExt, gdk::Screen, StyleContext,
+    traits::CssProviderExt,
+    Application, ApplicationWindow, Builder, StyleContext,
 };
 use libmystudio::workspace::Workspace;
 
@@ -40,9 +42,7 @@ fn build_ui(app: &Application) {
 
         let data = include_str!("./res/styles.css").as_bytes();
 
-        css_provider
-            .load_from_data(data)
-            .ok();
+        css_provider.load_from_data(data).ok();
 
         let screen = Screen::default().expect("Unable to find screen for css_provider");
         StyleContext::add_provider_for_screen(
