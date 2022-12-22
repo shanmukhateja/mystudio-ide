@@ -103,7 +103,7 @@ mod tests {
         assert!(test_icon_name_mime(
             "file.js",
             "application-javascript",
-            None
+            Some("text-javascript")
         ));
     }
 }
