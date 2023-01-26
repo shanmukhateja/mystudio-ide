@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{Read, Write},
+    io::{Read, Write}, path::PathBuf,
 };
 
 use byteorder::{BigEndian, LittleEndian};
@@ -10,6 +10,25 @@ use encoding_rs::{UTF_16BE, UTF_16LE};
 use jwalk::WalkDir;
 
 use crate::encoding::{detect_encoding, encode_to_utf16};
+
+pub fn get_config_dir() -> PathBuf {
+    let mut path_buf = dirs::config_dir().expect("Unable to open config directory.");
+    path_buf.push("mystudio-ide");
+
+    if !path_buf.exists() {
+        std::fs::create_dir_all(&path_buf).expect("Unable to create config directory.");
+    }
+
+    path_buf
+}
+
+pub fn get_config_file_path() -> PathBuf {
+    let mut path_buf = get_config_dir();
+
+    path_buf.push("config.toml");
+
+    path_buf
+}
 
 pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
     let result = WalkDir::new(&root_dir)

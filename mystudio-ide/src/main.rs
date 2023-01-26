@@ -11,7 +11,10 @@ use gtk::{
     traits::CssProviderExt,
     Application, ApplicationWindow, Builder, StyleContext,
 };
-use libmystudio::workspace::Workspace;
+use libmystudio::{
+    app_config::{AppConfigProvider, DefaultAppConfigProvider},
+    workspace::Workspace,
+};
 
 pub mod comms;
 mod keyboard;
@@ -36,6 +39,19 @@ fn build_ui(app: &Application) {
         *window.borrow_mut() = builder.object("main_window");
         assert!(window.borrow().as_ref().is_some());
         window.borrow().as_ref().unwrap().set_application(Some(app));
+
+        // Set window geometry
+        let app_config = DefaultAppConfigProvider::get_config();
+        window
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .set_width_request(app_config.General.application_width);
+        window
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .set_height_request(app_config.General.application_height);
 
         // Init styling
         let css_provider = gtk::CssProvider::new();
