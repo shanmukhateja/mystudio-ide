@@ -95,3 +95,14 @@ impl AppConfigProvider for DefaultAppConfigProvider {
         writer.flush().unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::{DefaultAppConfigProvider,AppConfigProvider};
+
+    #[test]
+    fn app_config_is_created_at_startup() {
+        assert!(DefaultAppConfigProvider::get_config().General.application_width > 0);
+    }
+}

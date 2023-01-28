@@ -1,6 +1,7 @@
 use std::{
     fs::File,
-    io::{Read, Write}, path::PathBuf,
+    io::{Read, Write},
+    path::PathBuf,
 };
 
 use byteorder::{BigEndian, LittleEndian};
@@ -12,7 +13,14 @@ use jwalk::WalkDir;
 use crate::encoding::{detect_encoding, encode_to_utf16};
 
 pub fn get_config_dir() -> PathBuf {
-    let mut path_buf = dirs::config_dir().expect("Unable to open config directory.");
+    let mut path_buf = if cfg!(not(test)) {
+        dirs::config_dir().expect("Unable to open config directory.")
+    } else {
+        tempfile::tempdir()
+            .expect("Unable to open config directory.")
+            .into_path()
+    };
+
     path_buf.push("mystudio-ide");
 
     if !path_buf.exists() {
