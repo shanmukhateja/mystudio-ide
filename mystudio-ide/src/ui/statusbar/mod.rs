@@ -1,6 +1,7 @@
 pub mod encoding_indicator;
 pub mod line_indicator;
 pub mod message;
+pub mod goto_line;
 
 use std::cell::RefCell;
 

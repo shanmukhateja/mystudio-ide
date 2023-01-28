@@ -6,8 +6,7 @@ use crate::{
     comms::CommEvents,
     ui::{
         action_row::handler::{on_open_dir_clicked, on_save_changes_clicked},
-        features,
-        statusbar::line_indicator::show_goto_dialog,
+        features, statusbar::goto_line::show_goto_dialog,
     },
 };
 
