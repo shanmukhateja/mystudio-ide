@@ -113,7 +113,7 @@ pub fn save_file_changes(file_absolute_path: String, content: &str) -> Result<()
 
 #[cfg(test)]
 mod tests {
-    use std::fs::{canonicalize, DirBuilder, File};
+    use std::fs::{canonicalize, copy, DirBuilder, File};
 
     use content_inspector::ContentType;
     use tempfile::tempdir;
@@ -124,31 +124,72 @@ mod tests {
 
     #[test]
     fn save_file_changes_utf8_test() {
-        let text_file_path = canonicalize("./src/test/data/utf8_file.txt");
-        assert!(text_file_path.is_ok());
+        let sample_text_file_path = canonicalize("./src/test/fixtures/utf8_file.txt");
+        assert!(sample_text_file_path.is_ok());
 
-        let text_file_path = text_file_path.unwrap();
+        let sample_text_file_path = sample_text_file_path.unwrap();
 
-        let text_file = File::open(&text_file_path);
+        // Setup temp directory
+        let base_temp_dir_path = tempdir().unwrap();
+        let base_temp_dir_path = base_temp_dir_path.path();
+
+        // Create an empty file at expected target so `canonicalize` won't fail.
+        // Note: Untested under Windows.
+        let target_file_path_string =
+            format!("{}/utf8_file.txt", base_temp_dir_path.to_str().unwrap());
+        assert!(File::create(target_file_path_string.clone()).is_ok());
+        let target_file_path = canonicalize(target_file_path_string.clone());
+        assert!(target_file_path.is_ok());
+
+        let target_file_path = target_file_path.unwrap();
+
+        // Copy UTF-8 sample text file to temp dir
+        assert!(copy(sample_text_file_path, target_file_path.clone()).is_ok());
+
+        let text_file = File::open(target_file_path);
         assert!(text_file.is_ok());
 
-        assert!(save_file_changes(text_file_path.to_str().unwrap().into(), "").is_ok());
+        assert!(save_file_changes(target_file_path_string.clone(), "").is_ok());
+
+        assert_eq!(
+            detect_encoding(&target_file_path_string),
+            ContentType::UTF_8
+        );
     }
 
     #[test]
     fn save_file_changes_utf16_test() {
-        let text_file_path = canonicalize("./src/test/data/utf16_file.txt");
-        assert!(text_file_path.is_ok());
+        let sample_text_file_path = canonicalize("./src/test/fixtures/utf16_file.txt");
+        assert!(sample_text_file_path.is_ok());
 
-        let text_file_path = text_file_path.unwrap();
-        let text_file_path_str = text_file_path.to_str().unwrap();
+        let sample_text_file_path = sample_text_file_path.unwrap();
 
-        let text_file = File::open(&text_file_path);
+        // Setup temp directory
+        let base_temp_dir_path = tempdir().unwrap();
+        let base_temp_dir_path = base_temp_dir_path.path();
+
+        // Create an empty file at expected target so `canonicalize` won't fail.
+        // Note: Untested under Windows.
+        let target_file_path_string =
+            format!("{}/utf16_file.txt", base_temp_dir_path.to_str().unwrap());
+        assert!(File::create(target_file_path_string.clone()).is_ok());
+        let target_file_path = canonicalize(target_file_path_string.clone());
+        assert!(target_file_path.is_ok());
+
+        let target_file_path = target_file_path.unwrap();
+
+        // Copy UTF-16 sample text file to temp dir
+        assert!(copy(sample_text_file_path, target_file_path.clone()).is_ok());
+
+        let text_file = File::open(target_file_path);
         assert!(text_file.is_ok());
 
-        assert!(save_file_changes(text_file_path_str.into(), "foo").is_ok());
+        assert!(save_file_changes(target_file_path_string.clone(), "foo").is_ok());
 
-        assert_eq!(detect_encoding(text_file_path_str), ContentType::UTF_16LE);
+        assert_eq!(
+            detect_encoding(&target_file_path_string),
+            ContentType::UTF_16LE
+        );
     }
 
     #[test]
@@ -176,7 +217,6 @@ mod tests {
         let f1 = File::create(f1_path);
         assert!(f1.is_ok());
 
-        println!("{:?}", &temp_dir);
         let result = read_dir_recursive(temp_dir_path);
 
         assert!(!result.is_empty());
