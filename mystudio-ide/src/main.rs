@@ -16,6 +16,8 @@ use libmystudio::{
     workspace::Workspace,
 };
 
+use crate::comms::Comms;
+
 pub mod comms;
 mod keyboard;
 mod ui;
@@ -86,7 +88,7 @@ fn build_ui(app: &Application) {
         ui::features::find_in_files::init(&builder);
 
         // Listen to UI changes
-        comms::handle_comm_event(tx, rx);
+        Comms::init(tx, rx);
 
         // Keyboard events
         crate::keyboard::listen_for_events(tx_clone.clone(), &window.borrow().clone().unwrap());
