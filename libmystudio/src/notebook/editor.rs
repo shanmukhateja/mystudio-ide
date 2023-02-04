@@ -9,12 +9,14 @@ pub fn jump_to_line_with_editor(editor: &View, line: i32, col: i32) {
 
     // We decrement line, col here as
     // it is user input and buffer starts at 0
-    let iter = buffer.iter_at_line_index(line - 1, col - 1);
+    let mut iter = buffer.iter_at_line_index(line - 1, col - 1);
     buffer.place_cursor(&iter);
 
     // Set focus to editor
     editor.set_is_focus(true);
     editor.set_has_focus(true);
+    // Scroll to line and column
+    editor.scroll_to_iter(&mut iter,0.1, false, 0.1f64, 0.1f64);
 }
 
 pub fn fetch_line_number_by_buffer(buffer: &Buffer) -> (i32, i32) {

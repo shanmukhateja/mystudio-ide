@@ -1,12 +1,19 @@
+use std::time::Duration;
+
 use gtk::{
-    prelude::{Cast, ContainerExt, NotebookExtManual, ScrolledWindowExt},
+    prelude::{Cast, ContainerExt, NotebookExtManual, ObjectExt, ScrolledWindowExt},
     traits::{TextBufferExt, TextViewExt},
-    Adjustment, ScrolledWindow, Viewport, Widget,
+    Adjustment, ScrolledWindow, Widget,
 };
-use libmystudio::notebook::cache::NotebookTabCache;
+use libmystudio::{notebook::cache::NotebookTabCache, tree::tree_model::RootTreeModel};
 use sourceview4::{
     traits::{BufferExt, LanguageManagerExt, ViewExt},
     LanguageManager, View,
+};
+
+use crate::{
+    comms::{CommEvents, Comms},
+    ui::statusbar::goto_line::jump_to_line_for_active_tab,
 };
 
 use super::nbmain::get_notebook;
@@ -25,24 +32,29 @@ fn set_editor_defaut_options(view: &View) {
     view.set_highlight_current_line(true);
 }
 
+pub fn open_editor_for_abs_path(abs_path: String, line: i32, col: i32) {
+    // create a mock RootTreeModel for convenience
+    let tree_model = RootTreeModel::default();
+    tree_model.set_property("abs-path", abs_path);
+    let tx = Comms::sender();
+    tx.send(CommEvents::RootTreeItemClicked(Some(tree_model)))
+        .expect("Unable to open search result.");
+    // Wait for SourceView to be populated.
+    gtk::glib::timeout_add_once(Duration::from_millis(500), move || {
+        jump_to_line_for_active_tab(line, col);
+    });
+}
+
 pub fn get_editor_by_path(file_path: String) -> Option<View> {
     let notebook_tab = NotebookTabCache::find_by_path(file_path);
     let page_num = notebook_tab.map(|f| f.position);
 
     let notebook = get_notebook().unwrap();
     let page = notebook.nth_page(page_num);
-
     let scrolled_window = page.map(|page| page.downcast::<ScrolledWindow>().unwrap());
-    let scrolled_window_children = scrolled_window.unwrap().children();
 
-    let viewport_widget = scrolled_window_children.first();
-    let viewport = viewport_widget
+    let view = scrolled_window
         .unwrap()
-        .clone()
-        .downcast::<Viewport>()
-        .unwrap();
-
-    let view = viewport
         .children()
         .first()
         .unwrap()
@@ -102,7 +114,7 @@ pub fn set_text_on_editor(
 }
 
 /**
- * Wrap a given `sourceview::View` widget inside `ScrolledWindow` & `Viewport`
+ * Wrap a given `sourceview::View` widget inside `ScrolledWindow`
  */
 pub fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
     // ScrolledWindow to enable scrollable content
@@ -110,12 +122,7 @@ pub fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
         ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
     let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
 
-    // Every ScrolledWindow needs a Viewport
-    let my_viewport = Viewport::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
-    // Add sourceview to `Viewport` and `Viewport` to `ScrolledWindow`
-    my_viewport.add(&editor_widget);
-
-    my_scroll_window.add(&my_viewport);
+    my_scroll_window.add(&editor_widget);
     my_scroll_window.set_propagate_natural_height(true);
 
     my_scroll_window_widget

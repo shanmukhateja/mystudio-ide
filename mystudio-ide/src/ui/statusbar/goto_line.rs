@@ -69,13 +69,13 @@ fn read_user_input_and_process(input_field: &Entry, dialog: &Dialog) {
         line = FromStr::from_str(value).unwrap_or(line);
     }
 
-    jump_to_line(line, col);
+    jump_to_line_for_active_tab(line, col);
 
     // reset UI & hide
     reset_and_hide_dialog(input_field, dialog);
 }
 
-fn jump_to_line(line: i32, col: i32) {
+pub fn jump_to_line_for_active_tab(line: i32, col: i32) {
     let file_path = Workspace::get_open_file_path().unwrap();
 
     let editor = editor::get_editor_by_path(file_path);

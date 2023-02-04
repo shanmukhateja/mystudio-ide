@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use gtk::{
-    gdk::keys::constants as key_constants,
+    gdk::{keys::constants as key_constants, EventType},
     prelude::{BuilderExtManual, Cast},
     traits::{ContainerExt, EntryExt, LabelExt, TextBufferExt, TextViewExt, WidgetExt},
     Box, Dialog, Entry, Label, ListBox, ListBoxRow, Widget,
@@ -12,7 +12,7 @@ use libmystudio::{
 };
 
 use crate::ui::notebook::editor::{
-    enable_scroll_for_sourceview, get_editor_instance, set_text_on_editor,
+    enable_scroll_for_sourceview, get_editor_instance, open_editor_for_abs_path, set_text_on_editor,
 };
 
 thread_local! { pub static G_FIND_FILES: RefCell<Option<Dialog>> = RefCell::new(None) }
@@ -90,10 +90,12 @@ fn reset_listbox() {
     }
 }
 
-fn hide_dialog() {
+fn hide_dialog(reset_dialog: bool) {
     let dialog = G_FIND_FILES.with(|l| l.borrow().clone().unwrap());
-    reset_listbox();
-    reset_input();
+    if reset_dialog {
+        reset_listbox();
+        reset_input();
+    }
 
     dialog.set_width_request(530);
     dialog.set_height_request(600);
@@ -118,12 +120,31 @@ fn update_search_results(results: Vec<SearchResult>, placeholder_text: String) {
     }
 
     for result in results {
-        let result_path_str = result.path.to_str().unwrap();
-        let result_file_contents = read_file_contents(result_path_str).unwrap();
+        let result_path_str = result.path.to_string_lossy().to_string();
+        let result_file_contents = read_file_contents(&result_path_str).unwrap();
 
         let row = ListBoxRow::new();
         row.set_widget_name("row_find_in_files_results");
         row.set_height_request(200);
+
+        // Double click to open search result in editor
+        let result_path_str_clone = result_path_str.clone();
+        let result_line_number = result.clone().line_number;
+        let result_col = result.clone().offset_start + 1;
+        row.connect_button_press_event(move |_row, event| {
+            if event.event_type() == EventType::DoubleButtonPress {
+                open_editor_for_abs_path(
+                    result_path_str_clone.to_string(),
+                    result_line_number,
+                    result_col,
+                );
+                hide_dialog(false);
+                return gtk::Inhibit(false);
+            }
+
+            gtk::Inhibit(true)
+        });
+
         let mybox = Box::new(gtk::Orientation::Vertical, 7);
 
         // Label for file path & line number
@@ -183,7 +204,7 @@ pub fn show_dialog() {
             let keyval = ev.keyval();
 
             if keyval == key_constants::Escape {
-                hide_dialog();
+                hide_dialog(true);
             }
 
             gtk::Inhibit(false)
