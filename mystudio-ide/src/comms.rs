@@ -5,7 +5,7 @@ use libmystudio::tree::tree_model::RootTreeModel;
 use libmystudio::workspace::Workspace;
 
 use crate::ui;
-use crate::ui::notebook::editor::{get_text_buffer_by_path, set_text_on_editor};
+use crate::ui::notebook::editor::Editor;
 use crate::ui::notebook::handler::handle_notebook_event;
 use crate::ui::w_explorer::tree_view::handle_tree_view_event;
 use crate::ui::w_explorer::G_TREE;
@@ -60,14 +60,14 @@ impl Comms {
                     handle_tree_view_event(tree_model, &tx);
                 }
                 CommEvents::UpdateRootTextViewContent(file_path, content) => {
-                    set_text_on_editor(None, file_path, content, false);
+                    Editor::new().set_text(file_path, content, false);
                 }
                 CommEvents::SaveEditorChanges() => {
                     let file_absolute_path = Workspace::get_open_file_path();
                     match file_absolute_path {
                         Some(file_abs_path) => {
                             // Get text from editor
-                            let text_buffer = get_text_buffer_by_path(file_abs_path.clone())
+                            let text_buffer = Editor::buffer_from_path(file_abs_path.clone())
                                 .expect("Unable to find editor for open file");
 
                             // Show message in Status bar

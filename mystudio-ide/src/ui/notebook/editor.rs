@@ -3,7 +3,7 @@ use std::time::Duration;
 use gtk::{
     prelude::{Cast, ContainerExt, NotebookExtManual, ObjectExt, ScrolledWindowExt},
     traits::{TextBufferExt, TextViewExt},
-    Adjustment, ScrolledWindow, Widget,
+    Adjustment, ScrolledWindow, Widget, TextBuffer,
 };
 use libmystudio::{notebook::cache::NotebookTabCache, tree::tree_model::RootTreeModel};
 use sourceview4::{
@@ -18,18 +18,87 @@ use crate::{
 
 use super::nbmain::get_notebook;
 
-pub fn get_editor_instance() -> View {
-    let editor = sourceview4::View::new();
-    set_editor_defaut_options(&editor);
-
-    editor
+pub struct Editor {
+    pub inner: View,
 }
 
-fn set_editor_defaut_options(view: &View) {
-    view.set_show_line_marks(true);
-    view.set_show_line_numbers(true);
-    view.set_auto_indent(true);
-    view.set_highlight_current_line(true);
+impl Editor {
+    pub fn new() -> Editor {
+        let view = sourceview4::View::new();
+        Self::set_editor_defaut_options(&view);
+
+        Editor { inner: view }
+    }
+
+    pub fn from_path(file_path: String) -> Option<View> {
+        let notebook_tab = NotebookTabCache::find_by_path(file_path);
+        let page_num = notebook_tab.map(|f| f.position);
+
+        let notebook = get_notebook().unwrap();
+        let page = notebook.nth_page(page_num);
+        let scrolled_window = page.map(|page| page.downcast::<ScrolledWindow>().unwrap());
+
+        let view = scrolled_window
+            .unwrap()
+            .children()
+            .first()
+            .unwrap()
+            .clone()
+            .downcast::<View>()
+            .unwrap();
+
+        Some(view)
+    }
+
+    pub fn buffer_from_path(file_path: String) -> Option<TextBuffer> {
+        Self::from_path(file_path).unwrap().buffer()   
+    }
+
+    pub fn set_text(
+        &mut self,
+        file_path: Option<String>,
+        content: Option<String>,
+        update_line_indicator: bool
+    ) {
+        let editor = self;
+
+        match content {
+            Some(content) => {
+                let source_buffer = sourceview4::Buffer::builder()
+                    .text(content.as_str())
+                    .build();
+
+                // Detect language for syntax highlight
+                let lang_manager = LanguageManager::new();
+                match lang_manager.guess_language(Some(file_path.unwrap()), None) {
+                    Some(lang) => {
+                        source_buffer.set_language(Some(&lang));
+                    }
+                    None => {
+                        source_buffer.set_language(sourceview4::Language::NONE);
+                    }
+                }
+                // update buffer in View
+                editor.inner.set_buffer(Some(&source_buffer));
+
+                // Update line indicator as per cursor movements
+                if update_line_indicator {
+                    crate::ui::statusbar::line_indicator::setup_listener(&editor.inner);
+                }
+            }
+            None => {
+                // Reset text content
+                editor.inner.buffer().unwrap().set_text("");
+            }
+        }
+    }
+
+    fn set_editor_defaut_options(view: &View) {
+        view.set_show_line_marks(true);
+        view.set_show_line_numbers(true);
+        view.set_auto_indent(true);
+        view.set_highlight_current_line(true);
+    }
 }
 
 pub fn open_editor_for_abs_path(abs_path: String, line: i32, col: i32) {
@@ -45,84 +114,16 @@ pub fn open_editor_for_abs_path(abs_path: String, line: i32, col: i32) {
     });
 }
 
-pub fn get_editor_by_path(file_path: String) -> Option<View> {
-    let notebook_tab = NotebookTabCache::find_by_path(file_path);
-    let page_num = notebook_tab.map(|f| f.position);
-
-    let notebook = get_notebook().unwrap();
-    let page = notebook.nth_page(page_num);
-    let scrolled_window = page.map(|page| page.downcast::<ScrolledWindow>().unwrap());
-
-    let view = scrolled_window
-        .unwrap()
-        .children()
-        .first()
-        .unwrap()
-        .clone()
-        .downcast::<View>()
-        .unwrap();
-
-    Some(view)
-}
-
-pub fn get_text_buffer_by_path(file_path: String) -> Option<gtk::TextBuffer> {
-    let editor = get_editor_by_path(file_path).unwrap();
-
-    editor.buffer()
-}
-
-pub fn set_text_on_editor(
-    mut editor: Option<View>,
-    file_path: Option<String>,
-    content: Option<String>,
-    update_line_indicator: bool,
-) {
-    if editor.is_none() {
-        editor = Some(get_editor_instance());
-    }
-    let editor = editor.unwrap();
-
-    match content {
-        Some(content) => {
-            let source_buffer = sourceview4::Buffer::builder()
-                .text(content.as_str())
-                .build();
-
-            // Detect language for syntax highlight
-            let lang_manager = LanguageManager::new();
-            match lang_manager.guess_language(Some(file_path.unwrap()), None) {
-                Some(lang) => {
-                    source_buffer.set_language(Some(&lang));
-                }
-                None => {
-                    source_buffer.set_language(sourceview4::Language::NONE);
-                }
-            }
-            // update buffer in View
-            editor.set_buffer(Some(&source_buffer));
-
-            // Update line indicator as per cursor movements
-            if update_line_indicator {
-                crate::ui::statusbar::line_indicator::setup_listener(&editor);
-            }
-        }
-        None => {
-            // Reset text content
-            editor.buffer().unwrap().set_text("");
-        }
-    }
-}
-
 /**
  * Wrap a given `sourceview::View` widget inside `ScrolledWindow`
  */
-pub fn enable_scroll_for_sourceview(editor_widget: Widget) -> Widget {
+pub fn enable_scroll_for_sourceview(editor_widget: &Widget) -> Widget {
     // ScrolledWindow to enable scrollable content
     let my_scroll_window =
         ScrolledWindow::new(Some(&Adjustment::default()), Some(&Adjustment::default()));
     let my_scroll_window_widget = my_scroll_window.clone().upcast::<Widget>();
 
-    my_scroll_window.add(&editor_widget);
+    my_scroll_window.add(editor_widget);
     my_scroll_window.set_propagate_natural_height(true);
 
     my_scroll_window_widget
@@ -135,7 +136,7 @@ mod tests {
     use tempfile::tempdir;
 
     use crate::ui::notebook::{
-        editor::{get_editor_by_path, get_editor_instance},
+        editor::Editor,
         nbmain::{create_notebook_tab, get_notebook},
     };
 
@@ -160,8 +161,9 @@ mod tests {
 
         // mock Notebook page
         let notebook = get_notebook().unwrap();
-        let mock_editor = get_editor_instance();
-        let tab_position = create_notebook_tab(notebook, mock_editor, "title", "icon_name");
+        let mock_editor = Editor::new();
+        let mock_view = mock_editor.inner;
+        let tab_position = create_notebook_tab(notebook, mock_view, "title", "icon_name");
 
         // mock Notebook cache entry
         let mock_cache = NotebookTabCache {
@@ -172,7 +174,7 @@ mod tests {
         NotebookTabCache::insert(mock_cache.clone());
 
         // Verify if editor is available
-        let editor = get_editor_by_path(mock_cache.file_path);
+        let editor = Editor::from_path(mock_cache.file_path);
         assert!(editor.is_some());
     }
 }

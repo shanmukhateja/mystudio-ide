@@ -9,7 +9,7 @@ use sourceview4::{Buffer, View};
 use super::{G_LINE_NUMBER, goto_line::show_goto_dialog};
 
 use crate::{
-    ui::notebook::editor::get_editor_by_path,
+    ui::notebook::editor::Editor,
     G_BUILDER,
 };
 
@@ -61,7 +61,7 @@ pub fn sync() {
         return;
     }
 
-    let editor_option = get_editor_by_path(file_path.unwrap());
+    let editor_option = Editor::from_path(file_path.unwrap());
 
     if let Some(editor) = editor_option {
         let buffer = editor.buffer().unwrap().downcast::<Buffer>().unwrap();

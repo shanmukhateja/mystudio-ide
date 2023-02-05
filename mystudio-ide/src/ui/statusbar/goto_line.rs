@@ -78,7 +78,7 @@ fn read_user_input_and_process(input_field: &Entry, dialog: &Dialog) {
 pub fn jump_to_line_for_active_tab(line: i32, col: i32) {
     let file_path = Workspace::get_open_file_path().unwrap();
 
-    let editor = editor::get_editor_by_path(file_path);
+    let editor = editor::Editor::from_path(file_path);
     if editor.is_none() {
         return;
     }

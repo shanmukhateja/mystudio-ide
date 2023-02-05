@@ -1,17 +1,15 @@
 use std::{ops::ControlFlow, path::Path};
 
 use gtk::{prelude::NotebookExtManual, traits::WidgetExt};
-
 use libmystudio::{
     notebook::cache::NotebookTabCache,
     tree::{tree_cell::get_icon_for_name, tree_model::TreeNodeType},
     workspace::Workspace,
 };
 
-use super::{
-    editor::{get_editor_by_path, get_editor_instance, set_text_on_editor},
-    nbmain::{create_notebook_tab, get_notebook},
-};
+use super::nbmain::{create_notebook_tab, get_notebook};
+
+use crate::ui::notebook::editor::Editor;
 
 pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
     let notebook = get_notebook().unwrap();
@@ -37,12 +35,12 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
         .to_string();
 
     // Add content to child of tab
-    let editor = get_editor_instance();
-    set_text_on_editor(Some(editor.clone()), Some(file_path.clone()), content, true);
+    let mut editor = Editor::new();
+    editor.set_text(Some(file_path.clone()), content, true);
 
     // create new tab
     let icon_name = get_icon_for_name(&file_name, TreeNodeType::File);
-    let tab_position = create_notebook_tab(notebook, editor, &file_name, &icon_name);
+    let tab_position = create_notebook_tab(notebook, editor.inner, &file_name, &icon_name);
 
     let tab = NotebookTabCache {
         file_path,
@@ -63,7 +61,7 @@ fn focus_tab_if_exists(file_path: Option<String>, notebook: &gtk::Notebook) -> C
         Workspace::set_open_file_path(Some(file_path.clone()));
 
         // focus the Editor if instance exists
-        if let Some(editor) = get_editor_by_path(file_path) {
+        if let Some(editor) = Editor::from_path(file_path) {
             editor.set_has_focus(true);
             editor.set_is_focus(true);
         }

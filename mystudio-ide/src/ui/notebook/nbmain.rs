@@ -35,7 +35,7 @@ pub fn create_notebook_tab(
 
     let editor_widget = editor.clone().upcast::<Widget>();
 
-    let my_scroll_window_widget = enable_scroll_for_sourceview(editor_widget.clone());
+    let my_scroll_window_widget = enable_scroll_for_sourceview(&editor_widget);
 
     let index = notebook.append_page(&my_scroll_window_widget, Some(&tab));
 

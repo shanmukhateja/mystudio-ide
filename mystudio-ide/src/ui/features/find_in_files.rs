@@ -12,7 +12,7 @@ use libmystudio::{
 };
 
 use crate::ui::notebook::editor::{
-    enable_scroll_for_sourceview, get_editor_instance, open_editor_for_abs_path, set_text_on_editor,
+    enable_scroll_for_sourceview, open_editor_for_abs_path, Editor,
 };
 
 thread_local! { pub static G_FIND_FILES: RefCell<Option<Dialog>> = RefCell::new(None) }
@@ -159,24 +159,24 @@ fn update_search_results(results: Vec<SearchResult>, placeholder_text: String) {
         label_path.set_xalign(0f32);
 
         // SourceView widget
-        let editor = get_editor_instance();
-        editor.set_editable(false);
+        let mut editor = Editor::new();
+        let view = editor.inner.clone();
+        view.set_editable(false);
 
-        set_text_on_editor(
-            Some(editor.clone()),
+        editor.set_text(
             Some(result_path_str.to_string()),
             Some(result_file_contents),
-            false,
+            false
         );
 
         // ScrolledWindow for editor
-        let editor_widget = editor.clone().upcast::<Widget>();
-        let scrolled_window_editor = enable_scroll_for_sourceview(editor_widget);
+        let editor_widget = view.clone().upcast::<Widget>();
+        let scrolled_window_editor = enable_scroll_for_sourceview(&editor_widget);
 
         let line_number = result.line_number;
 
         // char selection inside search result
-        let buffer = editor.buffer().unwrap().clone();
+        let buffer = view.buffer().unwrap().clone();
         let start = buffer.iter_at_line_offset(line_number - 1, result.offset_start);
         let end = buffer.iter_at_line_offset(line_number - 1, result.offset_end);
 
