@@ -5,8 +5,7 @@ use libmystudio::tree::tree_model::RootTreeModel;
 use libmystudio::workspace::Workspace;
 
 use crate::ui;
-use crate::ui::notebook::editor::Editor;
-use crate::ui::notebook::handler::handle_notebook_event;
+use crate::ui::notebook::{editor::Editor, handler::handle_notebook_event};
 use crate::ui::w_explorer::tree_view::handle_tree_view_event;
 use crate::ui::w_explorer::G_TREE;
 

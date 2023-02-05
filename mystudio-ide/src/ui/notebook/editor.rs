@@ -16,7 +16,7 @@ use crate::{
     ui::statusbar::goto_line::jump_to_line_for_active_tab,
 };
 
-use super::nbmain::get_notebook;
+use super::nbmain::MysNotebook;
 
 pub struct Editor {
     pub inner: View,
@@ -34,7 +34,7 @@ impl Editor {
         let notebook_tab = NotebookTabCache::find_by_path(file_path);
         let page_num = notebook_tab.map(|f| f.position);
 
-        let notebook = get_notebook().unwrap();
+        let notebook = MysNotebook::get().unwrap();
         let page = notebook.nth_page(page_num);
         let scrolled_window = page.map(|page| page.downcast::<ScrolledWindow>().unwrap());
 
@@ -137,7 +137,7 @@ mod tests {
 
     use crate::ui::notebook::{
         editor::Editor,
-        nbmain::{create_notebook_tab, get_notebook},
+        nbmain::MysNotebook,
     };
 
     #[test]
@@ -160,10 +160,9 @@ mod tests {
         let temp_file = root_dir.path().join("index.js");
 
         // mock Notebook page
-        let notebook = get_notebook().unwrap();
         let mock_editor = Editor::new();
         let mock_view = mock_editor.inner;
-        let tab_position = create_notebook_tab(notebook, mock_view, "title", "icon_name");
+        let tab_position = MysNotebook::new_tab(mock_view, "title", "icon_name");
 
         // mock Notebook cache entry
         let mock_cache = NotebookTabCache {

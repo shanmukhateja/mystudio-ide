@@ -7,7 +7,7 @@ use gtk::{
 };
 use libmystudio::{notebook::cache::NotebookTabCache, workspace::Workspace};
 
-use self::nbmain::get_notebook;
+use self::nbmain::MysNotebook;
 
 pub mod editor;
 pub mod handler;
@@ -26,7 +26,7 @@ pub fn init(builder: &Builder) {
         notebook.remove_page(Some(0));
     });
 
-    let notebook = get_notebook().unwrap();
+    let notebook = MysNotebook::get().unwrap();
 
     // Update open file_path counter and update file encoding indicator on page changed
     notebook.connect_switch_page(|_notebook, _page, position| {

@@ -7,12 +7,12 @@ use libmystudio::{
     workspace::Workspace,
 };
 
-use super::nbmain::{create_notebook_tab, get_notebook};
+use super::nbmain::MysNotebook;
 
 use crate::ui::notebook::editor::Editor;
 
 pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>) {
-    let notebook = get_notebook().unwrap();
+    let notebook = MysNotebook::get().unwrap();
 
     // Reset UI & return if None
     if let ControlFlow::Break(_) = reset_ui_if_needed(&file_path, &content, &notebook) {
@@ -40,7 +40,7 @@ pub fn handle_notebook_event(content: Option<String>, file_path: Option<String>)
 
     // create new tab
     let icon_name = get_icon_for_name(&file_name, TreeNodeType::File);
-    let tab_position = create_notebook_tab(notebook, editor.inner, &file_name, &icon_name);
+    let tab_position = MysNotebook::new_tab(editor.inner, &file_name, &icon_name);
 
     let tab = NotebookTabCache {
         file_path,
