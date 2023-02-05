@@ -210,4 +210,8 @@ pub fn show_dialog() {
             gtk::Inhibit(false)
         });
     });
+
+    let input = G_FIND_FILES_INPUT.with(|input| input.borrow().clone().unwrap());
+    input.set_has_focus(true);
+    input.set_is_focus(true);
 }
