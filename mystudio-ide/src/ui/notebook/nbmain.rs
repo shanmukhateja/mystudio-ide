@@ -39,8 +39,7 @@ impl MysNotebook {
         let index = notebook.append_page(&my_scroll_window_widget, Some(&tab));
 
         button.connect_clicked(glib::clone!(@weak notebook => move |_| {
-            let scrolled_window = &editor_widget.parent().unwrap().parent().unwrap();
-            Self::close_tab(scrolled_window);
+            Self::close_tab(&my_scroll_window_widget);
         }));
 
         // Show Notebook widget (GTK+ widgets hide themselves by default)
@@ -58,11 +57,11 @@ impl MysNotebook {
 
     fn close_tab(widget: &Widget) {
         let notebook = Self::get().unwrap();
-        let index = notebook
-            .page_num(widget)
-            .expect("Couldn't get page_num from notebook");
+        let Some(index) = notebook.page_num(widget) else { 
+            eprintln!("MysNotebook::close_tab: Couldn't get page number for widget.");
+            return
+        };
         notebook.remove_page(Some(index));
-
         // Also remove from cache
         NotebookTabCache::remove(index);
 
