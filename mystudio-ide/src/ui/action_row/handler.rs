@@ -1,12 +1,11 @@
 use gtk::{
-    glib,
     prelude::{FileExt, TextBufferExt},
     traits::{FileChooserExt, NativeDialogExt},
     TextBuffer,
 };
 use libmystudio::{fs, workspace::Workspace};
 
-use crate::comms::CommEvents;
+use crate::comms::{CommEvents, Comms};
 
 pub fn save_file_changes(
     text_buffer: TextBuffer,
@@ -20,7 +19,9 @@ pub fn save_file_changes(
     fs::save_file_changes(file_absolute_path, content)
 }
 
-pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
+pub fn on_open_dir_clicked() {
+    let tx = Comms::sender();
+    
     let dir_filter = gtk::FileFilter::new();
     dir_filter.add_mime_type("inode/directory");
 
@@ -46,6 +47,7 @@ pub fn on_open_dir_clicked(tx: &glib::Sender<CommEvents>) {
     chooser.hide();
 }
 
-pub fn on_save_changes_clicked(tx: &glib::Sender<CommEvents>) {
+pub fn on_save_changes_clicked() {
+    let tx = Comms::sender();
     tx.send(CommEvents::SaveEditorChanges()).ok();
 }

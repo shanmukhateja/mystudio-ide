@@ -71,13 +71,13 @@ fn build_ui(app: &Application) {
 
         // Channels to communicate with UI widgets
         let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-        let tx_clone = &tx.clone();
+        Comms::init(tx, rx);
 
         // Actions buttons menu
-        ui::action_row::setup_actions(&builder, tx.clone());
+        ui::action_row::setup_actions(&builder);
 
         // Tree
-        ui::w_explorer::init(&builder, tx.clone());
+        ui::w_explorer::init(&builder);
         // Notebook
         ui::notebook::init(&builder);
 
@@ -87,11 +87,8 @@ fn build_ui(app: &Application) {
         // Find in files
         ui::features::find_in_files::init(&builder);
 
-        // Listen to UI changes
-        Comms::init(tx, rx);
-
         // Keyboard events
-        crate::keyboard::listen_for_events(tx_clone.clone(), &window.borrow().clone().unwrap());
+        crate::keyboard::listen_for_events(&window.borrow().clone().unwrap());
 
         window.borrow().clone().unwrap().show_all();
     });

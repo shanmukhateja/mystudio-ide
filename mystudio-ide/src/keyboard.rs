@@ -2,25 +2,20 @@
 
 use std::cell::RefCell;
 
-use crate::{
-    comms::CommEvents,
-    ui::{
-        action_row::handler::{on_open_dir_clicked, on_save_changes_clicked},
-        features, statusbar::goto_line::show_goto_dialog,
-    },
+use crate::ui::{
+    action_row::handler::{on_open_dir_clicked, on_save_changes_clicked},
+    features,
+    statusbar::goto_line::show_goto_dialog,
 };
 
 use gtk::prelude::{AccelGroupExtManual, GtkWindowExt};
-use gtk::{gdk, ApplicationWindow};
-use gtk::{glib::Sender, AccelFlags};
+use gtk::{gdk, AccelFlags, ApplicationWindow};
 
 use libmystudio::workspace::Workspace;
 
 thread_local! {static KEY_EVENT_TRACKER : RefCell<Vec<gdk::EventKey>> = RefCell::new(Vec::new())}
 
-pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
-    let tx_clone = tx.clone();
-
+pub fn listen_for_events(window: &ApplicationWindow) {
     // "Open Workspace" Keyboard shortcut
     let (accel_key, accel_mods) = gtk::accelerator_parse("<Ctrl><Shift>O");
     let accel_group = gtk::AccelGroup::new();
@@ -30,7 +25,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
         accel_mods,
         AccelFlags::VISIBLE,
         move |_, _, _, _| {
-            on_open_dir_clicked(&tx.clone());
+            on_open_dir_clicked();
             true
         },
     );
@@ -46,7 +41,7 @@ pub fn listen_for_events(tx: Sender<CommEvents>, window: &ApplicationWindow) {
         accel_mods,
         AccelFlags::VISIBLE,
         move |_, _, _, _| {
-            on_save_changes_clicked(&tx_clone);
+            on_save_changes_clicked();
             true
         },
     );
