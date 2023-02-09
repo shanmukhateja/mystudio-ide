@@ -68,8 +68,8 @@ pub fn init(builder: &gtk::Builder) {
                     update_search_results(results, "".into());
                 }
                 Err(error) => {
-                    eprintln!("Search error: {}", error);
-                    update_search_results(vec![], format!("Search error: {}", error));
+                    eprintln!("Search error: {error}");
+                    update_search_results(vec![], format!("Search error: {error}"));
                 }
             }
 

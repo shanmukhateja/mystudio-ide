@@ -39,7 +39,7 @@ pub fn get_config_file_path() -> PathBuf {
 }
 
 pub fn read_dir_recursive(root_dir: String) -> Vec<jwalk::DirEntry<((), ())>> {
-    let result = WalkDir::new(&root_dir)
+    let result = WalkDir::new(root_dir)
         .skip_hidden(false)
         .sort(true)
         .max_depth(1);

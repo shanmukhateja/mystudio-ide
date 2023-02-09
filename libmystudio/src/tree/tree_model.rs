@@ -119,7 +119,7 @@ mod imp {
                     self.item_type.replace(Some(item_type));
                 }
                 e => {
-                    println!("requested set-property for unknown property: '{}'", e);
+                    println!("requested set-property for unknown property: '{e}'");
                 }
             }
         }
@@ -130,7 +130,7 @@ mod imp {
                 "abs-path" => self.abs_path.borrow().to_value(),
                 "item-type" => self.item_type.get().unwrap_or_default().to_value(),
                 e => {
-                    println!("requested unknown property: '{}'", e);
+                    println!("requested unknown property: '{e}'");
                     e.to_value()
                 }
             }

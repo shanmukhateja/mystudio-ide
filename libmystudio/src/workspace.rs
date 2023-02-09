@@ -90,7 +90,7 @@ impl Workspace {
             let dent = match result {
                 Ok(dent) => dent,
                 Err(err) => {
-                    eprintln!("{}", err);
+                    eprintln!("{err}");
                     continue;
                 }
             };
@@ -119,7 +119,7 @@ impl Workspace {
 
             // Report error
             if let Err(error) = result {
-                eprintln!("search err: {}", error);
+                eprintln!("search err: {error}");
                 return Err(Box::new(error));
             }
         }

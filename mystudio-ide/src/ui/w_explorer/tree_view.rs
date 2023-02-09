@@ -134,7 +134,7 @@ pub fn handle_tree_view_event(tree_model: Option<RootTreeModel>, tx: &Sender<Com
                 Workspace::set_open_file_path(Some(String::from(open_file_path)));
             }
             None => {
-                eprintln!("Unable to read file, '{}'", tree_item_abs_path);
+                eprintln!("Unable to read file, '{tree_item_abs_path}'");
             }
         }
     }

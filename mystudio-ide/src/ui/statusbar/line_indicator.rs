@@ -99,6 +99,6 @@ fn update(mut line: i32, mut col: i32, should_increment: bool) {
             l.set_visible(true);
         }
 
-        l.set_label(format!("Line {}, Column {}", line, col).as_str());
+        l.set_label(format!("Line {line}, Column {col}").as_str());
     });
 }
