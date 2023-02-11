@@ -1,4 +1,4 @@
-use std::{cell::RefCell, path::Path};
+use std::{cell::RefCell, path::Path, time::Duration};
 
 use gtk::{
     gdk::Screen,
@@ -26,7 +26,8 @@ mod ui;
 thread_local! { pub static G_BUILDER: RefCell<Option<Builder>> = RefCell::new(None) }
 thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
 
-fn build_ui(app: &Application) {
+#[tokio::main]
+async fn build_ui(app: &Application) {
     G_WINDOW.with(|window| {
         // Load UI from glade file
         let glade_src = include_str!("./res/ui/main_window.glade");
@@ -92,6 +93,8 @@ fn build_ui(app: &Application) {
 
         window.borrow().clone().unwrap().show_all();
     });
+    tokio::time::timeout(Duration::from_secs(3), libmystudio::lsp::init_lsp()).await;
+    // libmystudio::lsp::init_lsp().await;
 }
 
 fn main() {
