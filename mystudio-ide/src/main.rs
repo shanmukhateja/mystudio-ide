@@ -1,4 +1,4 @@
-use std::{cell::RefCell, path::Path, time::Duration};
+use std::{cell::RefCell, path::Path};
 
 use gtk::{
     gdk::Screen,
@@ -93,8 +93,33 @@ async fn build_ui(app: &Application) {
 
         window.borrow().clone().unwrap().show_all();
     });
-    tokio::time::timeout(Duration::from_secs(3), libmystudio::lsp::init_lsp()).await;
-    // libmystudio::lsp::init_lsp().await;
+    
+    let client = libmystudio::lsp::init_lsp().await;
+    {
+
+        if let Some(client) = client {
+            // tokio::spawn(client.x);
+
+            let mut cl = client._process.take().unwrap();
+            let proc_id = cl.id().unwrap_or(587);
+            loop {
+
+                let x  = cl.try_wait();
+                
+                let x = x.unwrap();
+                if x.is_some() {
+                    println!("DEAD!!");
+                    println!("proc_id {proc_id:?}");
+                    println!("{x:?}");
+                    break;
+                } else {
+                    println!("not dead yet!!");
+                }
+
+            }
+        };
+    };
+    
 }
 
 fn main() {
