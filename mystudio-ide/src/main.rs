@@ -93,60 +93,69 @@ async fn build_ui(app: &Application) {
 
         window.borrow().clone().unwrap().show_all();
     });
-    
+
     let client = libmystudio::lsp::init_lsp().await;
     {
-
         if let Some(client) = client {
-            // tokio::spawn(client.x);
+            // await the handle
+            tokio::spawn(client.handle.unwrap());
 
             let mut cl = client._process.take().unwrap();
             let proc_id = cl.id().unwrap_or(587);
             loop {
+                let x = cl.try_wait();
 
-                let x  = cl.try_wait();
-                
                 let x = x.unwrap();
                 if x.is_some() {
                     println!("DEAD!!");
                     println!("proc_id {proc_id:?}");
                     println!("{x:?}");
                     break;
-                } else {
-                    println!("not dead yet!!");
                 }
-
+                // else {
+                //     println!("not dead yet!!");
+                // }
             }
         };
     };
-    
 }
 
-fn main() {
-    let application = Application::new(
-        Some("com.github.shanmukhateja.my-studio-ide"),
-        ApplicationFlags::HANDLES_COMMAND_LINE,
-    );
+#[tokio::main(flavor = "multi_thread")]
+async fn main() -> std::io::Result<()> {
+    let t = tokio::task::spawn_blocking(|| {
+        let app = Application::new(
+            Some("com.github.shanmukhateja.my-studio-ide"),
+            ApplicationFlags::HANDLES_COMMAND_LINE,
+        );
 
-    application.connect_command_line(|app, app_cmd| {
-        let arguments = app_cmd.arguments();
+        app.connect_command_line(|app, app_cmd| {
+            let arguments = app_cmd.arguments();
 
-        if arguments.len() > 1 {
-            let workspace_dir_str = arguments[1].to_str().unwrap();
+            if arguments.len() > 1 {
+                let workspace_dir_str = arguments[1].to_str().unwrap();
 
-            // We (currently) only support directories as CLI argument
-            let workspace_path = Path::new(workspace_dir_str);
-            if !workspace_path.is_dir() {
-                panic!("Expected argument to be valid directory, aborting.");
+                // We (currently) only support directories as CLI argument
+                let workspace_path = Path::new(workspace_dir_str);
+                if !workspace_path.is_dir() {
+                    panic!("Expected argument to be valid directory, aborting.");
+                }
+
+                Workspace::update_path(workspace_dir_str.to_string());
             }
 
-            Workspace::update_path(workspace_dir_str.to_string());
-        }
+            build_ui(app);
 
-        build_ui(app);
+            0
+        });
 
-        0
+        app.run()
+        //
     });
 
-    application.run();
+    // eprintln!("exit!");
+
+    let _ = t.await?;
+    libmystudio::lsp::init_lsp().await;
+
+    Ok(())
 }

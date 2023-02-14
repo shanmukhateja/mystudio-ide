@@ -7,7 +7,7 @@ use tokio::{
     io::{AsyncReadExt, AsyncWriteExt, BufReader, BufWriter},
     process::{Child, ChildStdin, ChildStdout, Command},
     sync::mpsc::{channel, Sender},
-    task::{spawn, JoinHandle},
+    task::JoinHandle,
 };
 
 use crate::workspace::Workspace;
@@ -18,12 +18,13 @@ use crate::workspace::Workspace;
 pub struct MysLSP {
     pub _process: RefCell<Option<Child>>,
     pub tx_send: RefCell<Option<Sender<ChannelCommData>>>,
-    pub x: JoinHandle<()>,
+    pub handle: Option<JoinHandle<()>>,
 }
 
 #[derive(Debug)]
 pub struct ChannelCommData {
     pub data: String,
+    pub send_initialized: bool,
 }
 
 impl ToString for ChannelCommData {
@@ -81,7 +82,7 @@ async fn _spawn() -> MysLSP {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .kill_on_drop(false)
+        .kill_on_drop(true)
         .args([
             "--log-file",
             "/home/suryateja/.config/mystudio-ide/lsp/log.log",
@@ -102,52 +103,51 @@ async fn _spawn() -> MysLSP {
     MysLSP {
         _process: RefCell::new(Some(process)),
         tx_send: RefCell::new(Some(x)),
-        x: y,
+        handle: y,
     }
 }
 
 async fn _setup_listeners(
     stdin: ChildStdin,
     stdout: ChildStdout,
-) -> (Sender<ChannelCommData>, JoinHandle<()>) {
+) -> (Sender<ChannelCommData>, Option<JoinHandle<()>>) {
     let (tx_send, mut rx_send) = channel::<ChannelCommData>(100);
 
     let tx_send_clone = tx_send.clone();
 
-    let sender_thread = spawn(async move {
+    let sender_thread: JoinHandle<Option<()>> = tokio::spawn(async move {
         let mut writer = BufWriter::new(stdin);
-
-        let mut i=0;
 
         loop {
             let data = rx_send.recv().await;
             if data.is_none() {
                 println!("skipping rx_send loop..");
-                return;
+                return None;
             }
 
             println!("\n\ngot data from internal sender pipe: {data:?}");
 
-            let method_name = if i>0 {
-                "initialized"
-            } else {
-                "initialize"
-            };
+            let recv_data = data.unwrap();
 
-            let obj = object! {
-                jsonrpc: "2.0",
-                id: 1,
-                method: method_name,
-                params: {
+            let obj = if !recv_data.send_initialized {
+                object! {
                     jsonrpc: "2.0",
-                    clientInfo: {
-                        name: "mystudio-ide",
-                        version: "1.0"
-                    },
-                    capabilities: {},
-                    rootPath: "/home/suryateja/Projects/mdt",
-                    locale: "en"
+                    id: 1,
+                    method: "initialize",
+                    params: {
+                        jsonrpc: "2.0",
+                        clientInfo: {
+                            name: "mystudio-ide",
+                            version: "1.0"
+                        },
+                        capabilities: {},
+                        rootPath: "/home/suryateja/Projects/mdt",
+                        locale: "en"
+                    }
                 }
+            } else {
+                println!("sending INITIALIZED");
+                object! {method: "initialized", params: {} }
             };
 
             let payload = format!(
@@ -158,11 +158,11 @@ async fn _setup_listeners(
             println!("\n\nsending payload to LSP: '{payload}'\n");
             writer.write_all(payload.as_bytes()).await.unwrap();
             writer.flush().await.unwrap();
-            i += 1;
         }
+
     });
 
-    let recv_thread = spawn(async move {
+    let recv_thread = tokio::spawn(async move {
         let mut reader = BufReader::new(stdout);
 
         loop {
@@ -184,7 +184,13 @@ async fn _setup_listeners(
 
                         // send initialized notification
                         println!("sending initialized notification");
-                        tx_send_clone.send(ChannelCommData { data: String::new() }).await.unwrap();
+                        tx_send_clone
+                            .send(ChannelCommData {
+                                data: String::new(),
+                                send_initialized: true,
+                            })
+                            .await
+                            .unwrap();
                     } else {
                         println!("buf is empty");
                     }
@@ -222,5 +228,5 @@ async fn _setup_listeners(
     // tokio::spawn(recv_thread);
 
     println!("finishing up LSP comm listener");
-    (tx_send, _x)
+    (tx_send, Some(_x))
 }

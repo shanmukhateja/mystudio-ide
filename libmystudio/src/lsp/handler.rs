@@ -33,7 +33,7 @@ pub async fn lsp_handler(client: MysLSP) -> MysLSP {
 
     let req_string = serde_json::to_string(&init_req).unwrap();
 
-    tx_send.send(super::ChannelCommData { data: req_string }).await.ok();
+    tx_send.send(super::ChannelCommData { data: req_string, send_initialized: false }).await.ok();
 
     client
 }
