@@ -15,6 +15,7 @@ use libmystudio::{
     app_config::{AppConfigProvider, DefaultAppConfigProvider},
     workspace::Workspace,
 };
+use tokio::process::Child;
 
 use crate::comms::Comms;
 
@@ -25,6 +26,7 @@ mod ui;
 // Declare GUI widgets in TLS for 'global' access
 thread_local! { pub static G_BUILDER: RefCell<Option<Builder>> = RefCell::new(None) }
 thread_local! { static G_WINDOW: RefCell<Option<ApplicationWindow>> = RefCell::new(None) }
+thread_local! { static G_LSP_LIST: Vec<Child> = vec![] }
 
 #[tokio::main]
 async fn build_ui(app: &Application) {
@@ -94,7 +96,7 @@ async fn build_ui(app: &Application) {
         window.borrow().clone().unwrap().show_all();
     });
 
-    let client = libmystudio::lsp::init_lsp().await;
+    /*let client = libmystudio::lsp::init_lsp().await;
     {
         if let Some(client) = client {
             // await the handle
@@ -117,7 +119,7 @@ async fn build_ui(app: &Application) {
                 // }
             }
         };
-    };
+    };*/
 }
 
 #[tokio::main(flavor = "multi_thread")]
@@ -149,13 +151,11 @@ async fn main() -> std::io::Result<()> {
         });
 
         app.run()
-        //
     });
 
-    // eprintln!("exit!");
+    let _client = libmystudio::lsp::init_lsp().await;
 
     let _ = t.await?;
-    libmystudio::lsp::init_lsp().await;
 
     Ok(())
 }
